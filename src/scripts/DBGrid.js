@@ -16,6 +16,7 @@
         // Create global element references
         this.table = null;
         this.columns = null;
+        this.sortList = [];
         this.data = null;
 
         // Create options by extending with the passed in arguments
@@ -115,12 +116,11 @@
           tr.appendChild(td);
         }
       
-        // Create toggle
+        // todo Create toggle
         if (!props.isColumn && this.options.firstColumnToggle) {
           const img = document.createElement("img");
       
           img.src = "";
-          img.setAttribute("altText", "image"); // todo custom implementation
       
           tr.appendChild(img);
         }
@@ -128,6 +128,7 @@
         // Create row data
         for (let i = 0; i < props.data.length; i++) {
           const td = this.createTableData({
+            index: i,
             value: props.data[i].value,
             type: props.data[i].type,
             hidden: props.data[i].hidden,
@@ -159,8 +160,9 @@
         const span = document.createElement("span");
         let value = null;
       
+        // Class
         if (props.hidden) {
-          td.className = "hidden";
+          td.classList.add("hidden");
         }
       
         // todo clean up validations
@@ -173,7 +175,7 @@
           
           if (elementType === "checkbox") {
             // Attributes
-            td.setAttribute("style", "width: 25px;");
+            td.classList.add("checkbox");
       
             // Events
             if (props.isColumn) {              
@@ -186,10 +188,11 @@
       
           span.appendChild(control);
         } else {
+          // Set value
           if (props.isColumn) {
             value = props.value;
           } else {
-            // convert data type
+            // Convert to data type
             if (props.type === "date") {
               value =
                 props.value !== ""
@@ -201,6 +204,22 @@
               value = props.value;
             }
           }
+
+          if (props.isColumn
+            && !props.hidden
+            && this.options.allowSorting) {
+              // Class
+              span.classList.add("sortable");
+
+              // Attributes
+              span.sortName = props.index;
+              span.sortDirection = -1;
+              //span.setAttribute("sort-name", props.index);
+              //span.setAttribute("sort-direction", "");
+              
+              // Event
+              span.addEventListener("click", this.on.sort.bind(this, span));
+          }
       
           span.appendChild(document.createTextNode(value));
         }
@@ -210,6 +229,27 @@
         return td;
       },
       on: {
+        sort: function(sender, event) {
+          // Update sort direction { 0: NONE, 1: ASC, 2: DESC}
+          sender.sortDirection = sender.sortDirection < 1
+            ? ++sender.sortDirection
+            : -1;
+          
+          // Add to sort list
+          if (sender.sortDirection == 0) {
+            this.sortList.push(sender.sortName);
+          }
+          else if (sender.sortDirection < 0) {
+            let index = this.sortList.indexOf(sender.sortName);
+
+            this.sortList.splice(index, 1);
+          }
+
+          // Sort by sort list
+          //todo
+          
+          console.log(this.sortList);          
+        },
         rowClick: function(sender, event) {
           // user-defined row click event
           if (this.events.rowClick && typeof this.events.rowClick === "function") {
