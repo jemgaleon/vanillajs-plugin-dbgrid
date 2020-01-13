@@ -1,18 +1,3 @@
-/*
-Note:
-- not written in es6.. shaad :(
-
-Todo:
-- web api call for data
-- sort
-- paging
-- selected datakeynames
-- add comments/documentation
-
-Issue:
-- checkbox click triggers row click
-*/
-
 (function() {
     // Constructor
     this.DBGrid = function() {
@@ -52,11 +37,12 @@ Issue:
         },
         getColumns: function() {
           // todo web api call
+          // note data key name, if dbgrid.dataKeyNames found in the fields, add dataKeyName props to data
           return [
-            { value: "Exam Key", type: "number", hidden: true, primaryKey: true },
-            { value: "Case Key", type: "number", hidden: true },
-            { value: "Section", type: "string" },
-            { value: "Priority", type: "string" },
+            { value: "Exam Key", type: "number", hidden: true, dataKeyName: "examKey" },
+            { value: "Case Key", type: "number", hidden: true, dataKeyName: "caseKey" },
+            { value: "Section", type: "string", dataKeyName: "section" },
+            { value: "Priority", type: "string", dataKeyName: "priority" },
             { value: "Lab #", type: "string" },
             { value: "Date Assigned", type: "date" },
             { value: "Due Date", type: "date" },
@@ -70,10 +56,10 @@ Issue:
           return [
             [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
             [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
-            [3,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+            [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
             [4,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [5,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [6,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+            [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+            [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
             [7,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
           ];
         },
@@ -100,7 +86,7 @@ Issue:
                   value: row,
                   type: columns[index].type,
                   hidden: columns[index].hidden,
-                  primaryKey: columns[index].primaryKey
+                  dataKeyName: columns[index].dataKeyName
                 }
               }, [])
             });
@@ -118,12 +104,7 @@ Issue:
       },
       createTableRow: function(props) {
         const tr = document.createElement("tr");
-        
-        // Attributes
-        if (!props.isColumn) {
-          tr.setAttribute("key", props.data[0].value);
-        }
-      
+              
         // Create checkbox
         if (this.options.firstColumnCheckbox) {
           const td = this.createTableData({
@@ -152,6 +133,12 @@ Issue:
             hidden: props.data[i].hidden,
             isColumn: props.isColumn
           });
+
+          // Data Key
+          if (!props.isColumn
+            && props.data[i].dataKeyName) {
+            tr.dataset[props.data[i].dataKeyName] = props.data[i].value;
+          }
       
           tr.appendChild(td);
         }
