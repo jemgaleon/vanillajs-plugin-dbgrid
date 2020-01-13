@@ -7,10 +7,6 @@ body * {
   margin: 10px;
 }
 
-#sample {
-  display: none;
-}
-
 .tblWrapper {
   width: 800px;
   height: 150px;
@@ -33,7 +29,7 @@ thead th {
   background: #5d7b9d;
 }
 
-thead th span {
+thead th span.sortable {
   text-decoration: underline;
 
   cursor: pointer;
@@ -62,6 +58,11 @@ td {
   padding: 0;
   margin: 0;
   /* text-overflow: ellipsis; */
+}
+
+th.checkbox,
+td.checkbox {
+  width: 25px;
 }
 
 th span,

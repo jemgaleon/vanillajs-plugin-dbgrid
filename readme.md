@@ -28,5 +28,5 @@ tblWrapper.appendChild(dbgrid);
 ```
 
 Note:
-- Not written in es6 yet :(
-
+- Not written in es6 yet
+- Do not expose database! 
