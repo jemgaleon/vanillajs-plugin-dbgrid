@@ -4,16 +4,27 @@ let dbgrid;
   
   // Instance DBGrid Obj
   dbgrid = new DBGrid({
-    firstColumnCheckbox: true,
+    //firstColumnCheckbox: true,
     cancelSelectOnClick: false,
     allowSorting: true,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
     events: {
       rowClick: function(sender, event) {
-        console.log(sender.dataset);
+        //console.log(sender.dataset);
+        console.log("user row click");
+      },
+      checkAll: function(sender, event) {
+        console.log("user check all");
+      },
+      check: function(sender, event) {
+        console.log("user check");
       }
-    }
+    },
+    customFields: [
+      { type: "checkbox", index: 0, includeInHeader: true }
+    ]
   });
   
   grdWorksheet.appendChild(dbgrid.table);
+  grdWorksheet.classList.add("tblWrapper");
 }());

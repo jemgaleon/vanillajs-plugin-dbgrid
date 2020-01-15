@@ -4,6 +4,7 @@ A simple grid maker javascript plugin. Basically, I'm trying to  somehow impleme
 
 Todo(s):
 - [ ] web api call for data
+- [ ] stored procedure for data fetch
 - [ ] AllowSorting
 - [ ] AllowPaging/PageSize
 - [x] DataKeyNames
@@ -30,3 +31,8 @@ tblWrapper.appendChild(dbgrid);
 Note:
 - Not written in es6 yet
 - Do not expose database! 
+
+let tre = dbgrid.table.querySelectorAll("tbody tr td:nth-child(4)");
+tre.toArray().sort((x,y) => x.textContent.localeCompare(y.textContent))
+let listOfRows = [...tre]
+listOfRows.sort((x,y) => x.textContent.localeCompare(y.textContent)).map( x=> x.textContent)

@@ -1,40 +1,55 @@
 (function() {
     // Constructor
-    this.DBGrid = function() {
+    window.DBGrid = function() {
+        const grid = this;
         // Define options defaults
         const defaults = {
             gridName: "",
             allowSorting: false,
             allowPaging: false,
             pageSize: 10,
-            firstColumnCheckbox: false,
+            //firstColumnCheckbox: false, // replace with customFields props
             cancelSelectOnClick: false,
             width: 700,
-            height: 300
+            height: 300,
+
+            // add these for structure
+            events: {
+              rowClick: null,
+              rowCreated: null
+            },
+            dataKeyNames: [],
+            customFields: [ // support pre-defined controls first
+              //{ type: "checkbox", includeInHeader: true, index: 0 },
+              //{ type: "toggle", includeInHeader: false, index: 0 }
+            ]
         }
 
         // Create global element references
-        this.table = null;
-        this.columns = null;
-        this.sortList = [];
-        this.data = null;
+        grid.table = null;
+        grid.columns = null;
+        grid.sortList = [];
+        grid.data = null;
 
         // Create options by extending with the passed in arguments
-        this.options = extendDefaults(defaults, arguments[0]);
+        grid.options = extendDefaults(defaults, arguments[0]);
         if (arguments[0] && typeof arguments[0] === "object") {
-          this.events = arguments[0].events;
+          grid.events = arguments[0].events;
         }
 
-        // todo best practice not sure if this is okay
-        this.create();
+        // todo best practice not sure if grid is okay
+        //grid.parent.classList.add("tblWrapper");
+        grid.create();
     }
 
     // Public Methods
     DBGrid.prototype = {
         create: function() {
-          this.columns = this.getColumns();
-          this.data = this.getData();
-          this.createTable();
+          const grid = this;
+
+          grid.columns = grid.getColumns();
+          grid.data = grid.getData();
+          grid.createTable();
         },
         getColumns: function() {
           // todo web api call
@@ -65,22 +80,24 @@
           ];
         },
         createTable: function() {        
-          const columns = this.columns;
-          const data = this.data;
+          const grid = this;
+
+          const columns = grid.columns;
+          const data = grid.data;
 
           const table = document.createElement("table");
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
         
           // Create thead
-          const trHead = this.createTableRow({
+          const trHead = grid.createTableRow({
             isColumn: true,
             data: columns
           });
         
           // Create tbody
           for(let i = 0; i < data.length; i++) {
-            const tr = this.createTableRow({
+            const tr = grid.createTableRow({
               isColumn: false,
               data: data[i].map(function(row, index) {
                 return {
@@ -99,35 +116,60 @@
           table.appendChild(thead);
           table.appendChild(tbody);
 
-          this.table = table;
+          grid.table = table;
         
           return table;
       },
       createTableRow: function(props) {
+        const grid = this;
+
         const tr = document.createElement("tr");
               
-        // Create checkbox
-        if (this.options.firstColumnCheckbox) {
-          const td = this.createTableData({
-            type: "input|checkbox",
-            isColumn: props.isColumn
-          });
+        // todo make customFields dynamic
+        // Create custom fields
+        //if (grid.options.firstColumnCheckbox) {
+        if (grid.options.customFields.length > 0) {
+          let customFields = grid.options.customFields;
 
-          tr.appendChild(td);
+          customFields.forEach(function(customField, index) {
+            let td = null;
+            let properties = {};
+            
+            // Checkbox
+            if (customField.type === "checkbox") {
+              if ((props.isColumn && customField.includeInHeader)
+                || !props.isColumn) {
+                  properties = {
+                  type: "input|type=checkbox",
+                  isColumn: props.isColumn
+                };
+              }
+              else {
+                properties = {
+                  value: "",
+                  isColumn: props.isColumn
+                };
+              }
+
+              td = grid.createTableData(properties);
+            }
+            
+            tr.appendChild(td);
+          });
         }
       
-        // todo Create toggle
-        if (!props.isColumn && this.options.firstColumnToggle) {
-          const img = document.createElement("img");
+        // // todo Create toggle
+        // if (!props.isColumn && grid.options.firstColumnToggle) {
+        //   const img = document.createElement("img");
       
-          img.src = "";
+        //   img.src = "";
       
-          tr.appendChild(img);
-        }
+        //   tr.appendChild(img);
+        // }
       
         // Create row data
         for (let i = 0; i < props.data.length; i++) {
-          const td = this.createTableData({
+          const td = grid.createTableData({
             index: i,
             value: props.data[i].value,
             type: props.data[i].type,
@@ -146,14 +188,16 @@
       
         // Events
         if (!props.isColumn) {
-          if (!this.options.cancelSelectOnClick) {
-            tr.addEventListener("click", this.on.rowClick.bind(this, tr));
+          if (!grid.options.cancelSelectOnClick) {
+            tr.addEventListener("click", grid.on.rowClick.bind(grid, tr));
           }
         }
-      
+
         return tr;
       },
-      createTableData: function(props) {      
+      createTableData: function(props) {   
+        const grid = this;
+
         const td = props.isColumn 
           ? document.createElement("th") 
           : document.createElement("td");
@@ -166,23 +210,37 @@
         }
       
         // todo clean up validations
-        if (props.type.indexOf("|") > -1) {
+        // Custom field
+        if (props.type 
+          && props.type.indexOf("|") > -1) {
           const element = props.type.split("|")[0];
-          const elementType =  props.type.split("|")[1];
+          const attributes =  props.type.split("|")[1];
           const control = document.createElement(element);
-      
-          control.setAttribute("type", elementType);
+          let elementType = "";
+            
+          // Set attributes dynamically
+          attributes.split(",").forEach(function(attribute, index) {
+            const attrName = attribute.split("=")[0];
+            const attrValue = attribute.split("=")[1];
+
+            control.setAttribute(attrName, attrValue);
+
+            if (attrName == "type") {
+              elementType = attrValue;
+            }
+          });
           
+          // Checkbox
           if (elementType === "checkbox") {
-            // Attributes
+            // Class
             td.classList.add("checkbox");
       
             // Events
             if (props.isColumn) {              
-              control.addEventListener("click", this.on.checkAll.bind(this, control));
+              control.addEventListener("click", grid.on.checkAll.bind(grid, control));
             }
             else {
-              control.addEventListener("click", this.on.check.bind(this, control));
+              control.addEventListener("click", grid.on.check.bind(grid, control));
             }
           }
       
@@ -207,7 +265,7 @@
 
           if (props.isColumn
             && !props.hidden
-            && this.options.allowSorting) {
+            && grid.options.allowSorting) {
               // Class
               span.classList.add("sortable");
 
@@ -218,7 +276,7 @@
               //span.setAttribute("sort-direction", "");
               
               // Event
-              span.addEventListener("click", this.on.sort.bind(this, span));
+              span.addEventListener("click", grid.on.sort.bind(grid, span));
           }
       
           span.appendChild(document.createTextNode(value));
@@ -230,48 +288,70 @@
       },
       on: {
         sort: function(sender, event) {
+          const grid = this;
+
           // Update sort direction { 0: NONE, 1: ASC, 2: DESC}
           sender.sortDirection = sender.sortDirection < 1
             ? ++sender.sortDirection
             : -1;
-          
+          //console.log(sender.sortDirection);
           // Add to sort list
           if (sender.sortDirection == 0) {
-            this.sortList.push(sender.sortName);
+            grid.sortList.push(sender.sortName);
           }
           else if (sender.sortDirection < 0) {
-            let index = this.sortList.indexOf(sender.sortName);
+            let index = grid.sortList.indexOf(sender.sortName);
 
-            this.sortList.splice(index, 1);
+            grid.sortList.splice(index, 1);
           }
 
-          // Sort by sort list
-          //todo
-          
-          console.log(this.sortList);          
+          // Multiple sort by sort list - todo future implementations
+          //console.log(grid.sortList);
+
+          // Single Sort - todo check sort algo
+          const rows = grid.table.querySelectorAll("tbody tr");
+
+          //console.log(rows);
         },
         rowClick: function(sender, event) {
-          // user-defined row click event
-          if (this.events.rowClick && typeof this.events.rowClick === "function") {
-            this.events.rowClick(sender, event);
+          const grid = this;
+
+          // Do default behavior first
+          
+          // Call user-defined row click event
+          if (grid.events.rowClick 
+            && typeof grid.events.rowClick === "function") {
+            grid.events.rowClick(sender, event);
           }
         },
         checkAll: function(sender, event) {
+          const grid = this;
+
+          // Do default behavior first
           const isChecked = sender.checked;
-          const checkboxes = this.table.querySelectorAll("tbody input[type=checkbox]");
+          const checkboxes = grid.table.querySelectorAll("tbody input[type=checkbox]");
 
           checkboxes.forEach(function(checkbox) {
             checkbox.checked = isChecked;
           });
+
+          // Call user-defined check all event
+          if (grid.events.checkAll
+            && typeof grid.events.checkAll === "function") {
+            grid.events.checkAll(sender, event);
+          }
         },
         check: function(sender, event) {
-          const checkboxAll = this.table.querySelector("thead input[type=checkbox]");
+          const grid = this;
+
+          // Do default behavior first
+          const checkboxAll = grid.table.querySelector("thead input[type=checkbox]");
 
           if (!sender.checked) {
             checkboxAll.checked = false
           }
           else {
-            const checkboxes = this.table.querySelectorAll("tbody input[type=checkbox]");
+            const checkboxes = grid.table.querySelectorAll("tbody input[type=checkbox]");
             let hasUnchecked = false;
 
             checkboxes.forEach(function(checkbox) {
@@ -283,6 +363,14 @@
 
             checkboxAll.checked = !hasUnchecked;
           }
+
+          // Call user-defined check event
+          if (grid.events.check 
+            && typeof grid.events.check === "function") {
+            grid.events.check(sender, event);
+          }
+          
+          event.stopPropagation();
         }
       }
     };
