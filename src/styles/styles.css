@@ -8,74 +8,8 @@ body * {
 }
 
 .tblWrapper {
-  width: 800px;
-  height: 150px;
+  width: 900px;
+  /* height: 150px; */
   overflow: auto;
 }
 
-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  box-sizing: border-box;
-}
-
-thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-
-  color: #fff;
-  background: #5d7b9d;
-}
-
-thead th span.sortable {
-  text-decoration: underline;
-
-  cursor: pointer;
-}
-
-tbody tr {
-  cursor: pointer;
-}
-
-tbody tr:hover {
-  text-decoration: underline;
-}
-
-tbody tr:nth-child(odd) {
-  background: #f7f6f3;
-}
-
-th,
-td {
-  text-align: left;
-  vertical-align: middle;
-
-  overflow: hidden;
-  white-space: nowrap;
-
-  padding: 0;
-  margin: 0;
-  /* text-overflow: ellipsis; */
-}
-
-th.checkbox,
-td.checkbox {
-  width: 25px;
-}
-
-th span,
-td span {
-  display: block;
-  padding: 5px;
-}
-
-.hidden {
-  display: none;
-}
-
-/* tableception */
-.tableception thead th {
-  z-index: 0;
-}
