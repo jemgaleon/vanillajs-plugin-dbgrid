@@ -1,17 +1,21 @@
 let dbgrid;
+
 (function() {
   const grdWorksheet = document.getElementById("grdWorksheet");
   
   // Instance DBGrid Obj
   dbgrid = new DBGrid({
-    //firstColumnCheckbox: true,
+    gridName: "WORKLIST",
     cancelSelectOnClick: false,
     allowSorting: true,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
     events: {
+      rowCreated: function(sender, event) {
+        //console.log(sender);
+      },
       rowClick: function(sender, event) {
-        //console.log(sender.dataset);
-        console.log("user row click");
+        console.log(sender.dataset);
+        //console.log("user row click");
       },
       checkAll: function(sender, event) {
         console.log("user check all");

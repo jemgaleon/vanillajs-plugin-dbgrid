@@ -5,23 +5,25 @@
         // Define options defaults
         const defaults = {
             gridName: "",
-            allowSorting: false,
-            allowPaging: false,
+            allowSorting: true,
+            allowPaging: true,
             pageSize: 10,
-            //firstColumnCheckbox: false, // replace with customFields props
             cancelSelectOnClick: false,
             width: 700,
             height: 300,
 
-            // add these for structure
+            // Add these for structure
             events: {
+              sort: null,
               rowClick: null,
-              rowCreated: null
+              rowCreated: null,
+              checkAll: null,
+              check: null
             },
             dataKeyNames: [],
-            customFields: [ // support pre-defined controls first
-              //{ type: "checkbox", includeInHeader: true, index: 0 },
-              //{ type: "toggle", includeInHeader: false, index: 0 }
+            customFields: [
+              // Support pre-defined controls first
+              { type: "", includeInHeader: false, index: 0 }
             ]
         }
 
@@ -29,7 +31,9 @@
         grid.table = null;
         grid.columns = null;
         grid.sortList = [];
-        grid.data = null;
+        grid.rowData = null;
+        grid.selectedIndex = null;
+        grid.pageIndex = null;
 
         // Create options by extending with the passed in arguments
         grid.options = extendDefaults(defaults, arguments[0]);
@@ -37,97 +41,116 @@
           grid.events = arguments[0].events;
         }
 
-        // todo best practice not sure if grid is okay
-        //grid.parent.classList.add("tblWrapper");
+        grid.init();
         grid.create();
     }
 
     // Public Methods
     DBGrid.prototype = {
-        create: function() {
+      init: function() {
+        const grid = this;
+
+        grid.columns = grid.getColumns();
+        grid.rowData = grid.getRowData();
+      },
+      create: function() {
+        const grid = this;
+
+        grid.createTable();
+        grid.createTableHead();
+        grid.createTableBody();
+      },
+      getColumns: function() {
+        // todo web api call
+        return [
+          { text: "Exam Key", value: "EXAM_KEY", type: "number", hidden: true, dataKey: true },
+          { text: "Case Key", value: "CASE_KEY", type: "number", hidden: true, dataKey: true },
+          { text: "Section", value: "SECTION", type: "string", dataKey: true },
+          { text: "Priority", value: "PRIORITY", type: "string", dataKey: true },
+          { text: "Lab #", value: "LAB_NUMBER", type: "string" },
+          { text: "Date Assigned", value: "DATE_ASSIGNED", type: "date" },
+          { text: "Due Date", value: "DUE_DATE", type: "date" },
+          { text: "Status", value: "STATUS", type: "string" },
+          { text: "Complaint Number", value: "COMPLAINT NUMBER", type: "string" },
+          { text: "Items", value: "ITEMS", type: "string" }
+        ]
+      },
+      getRowData: function () {
+        // todo web api call
+        return [
+          [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
+          [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
+          [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+          [4,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+          [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+          [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+          [7,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
+        ];
+      },
+      createTable: function() {        
           const grid = this;
-
-          grid.columns = grid.getColumns();
-          grid.data = grid.getData();
-          grid.createTable();
-        },
-        getColumns: function() {
-          // todo web api call
-          // note data key name, if dbgrid.dataKeyNames found in the fields, add dataKeyName props to data
-          return [
-            { value: "Exam Key", type: "number", hidden: true, dataKeyName: "examKey" },
-            { value: "Case Key", type: "number", hidden: true, dataKeyName: "caseKey" },
-            { value: "Section", type: "string", dataKeyName: "section" },
-            { value: "Priority", type: "string", dataKeyName: "priority" },
-            { value: "Lab #", type: "string" },
-            { value: "Date Assigned", type: "date" },
-            { value: "Due Date", type: "date" },
-            { value: "Status", type: "string" },
-            { value: "Complaint Number", type: "string" },
-            { value: "Items", type: "string" }
-          ]
-        },
-        getData: function () {
-          // todo web api call
-          return [
-            [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
-            [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
-            [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [4,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-            [7,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
-          ];
-        },
-        createTable: function() {        
-          const grid = this;
-
-          const columns = grid.columns;
-          const data = grid.data;
-
           const table = document.createElement("table");
-          const thead = document.createElement("thead");
-          const tbody = document.createElement("tbody");
-        
-          // Create thead
-          const trHead = grid.createTableRow({
-            isColumn: true,
-            data: columns
-          });
-        
-          // Create tbody
-          for(let i = 0; i < data.length; i++) {
-            const tr = grid.createTableRow({
-              isColumn: false,
-              data: data[i].map(function(row, index) {
-                return {
-                  value: row,
-                  type: columns[index].type,
-                  hidden: columns[index].hidden,
-                  dataKeyName: columns[index].dataKeyName
-                }
-              }, [])
-            });
-        
-            tbody.appendChild(tr);
-          }
-        
-          thead.appendChild(trHead);
-          table.appendChild(thead);
-          table.appendChild(tbody);
 
           grid.table = table;
-        
+
           return table;
+      },
+      createTableHead: function() {
+        const grid = this;
+        const thead = document.createElement("thead");
+        const rowData = grid.columns.map(function(column, index) {
+          return {
+            cellValue: column.text,
+            type: column.type,
+            hidden: column.hidden,
+            dataKeyName: column.dataKey ? column.value : "",
+            sortName: column.value
+          }
+        }, []);
+        const trHead = grid.createTableRow({
+          isColumn: true,
+          rowData: rowData
+        });
+
+        thead.appendChild(trHead);
+        grid.table.appendChild(thead);
+
+        return thead;
+      },
+      createTableBody: function() {
+        const grid = this;
+        const tbody = document.createElement("tbody");       
+        
+        // Create tbody
+        for(let i = 0; i < grid.rowData.length; i++) {
+          const rowData =  grid.rowData[i].map(function(cell, index) {
+            return {
+              cellValue: cell,
+              type: grid.columns[index].type,
+              hidden: grid.columns[index].hidden,
+              dataKeyName: grid.columns[index].dataKey ? grid.columns[index].value : ""
+            }
+          }, []);
+          const tr = grid.createTableRow({
+            rowData: rowData
+          });
+      
+          tbody.appendChild(tr);
+        }
+
+        grid.table.appendChild(tbody);
+
+        return tbody;
+      },
+      createTableFoot: function() {
+        const grid = this;
+        
       },
       createTableRow: function(props) {
         const grid = this;
-
         const tr = document.createElement("tr");
-              
-        // todo make customFields dynamic
-        // Create custom fields
-        //if (grid.options.firstColumnCheckbox) {
+
+        // Create custom row data
         if (grid.options.customFields.length > 0) {
           let customFields = grid.options.customFields;
 
@@ -139,48 +162,41 @@
             if (customField.type === "checkbox") {
               if ((props.isColumn && customField.includeInHeader)
                 || !props.isColumn) {
-                  properties = {
-                  type: "input|type=checkbox",
+                properties = {
+                  cellType: "input|type=checkbox",
                   isColumn: props.isColumn
                 };
               }
               else {
                 properties = {
-                  value: "",
+                  cellValue: "",
                   isColumn: props.isColumn
                 };
               }
 
               td = grid.createTableData(properties);
+              tr.appendChild(td);
             }
-            
-            tr.appendChild(td);
           });
         }
       
-        // // todo Create toggle
-        // if (!props.isColumn && grid.options.firstColumnToggle) {
-        //   const img = document.createElement("img");
-      
-        //   img.src = "";
-      
-        //   tr.appendChild(img);
-        // }
-      
         // Create row data
-        for (let i = 0; i < props.data.length; i++) {
+        for (let i = 0; i < props.rowData.length; i++) {
           const td = grid.createTableData({
-            index: i,
-            value: props.data[i].value,
-            type: props.data[i].type,
-            hidden: props.data[i].hidden,
-            isColumn: props.isColumn
+            cellIndex: i + Number(grid.options.customFields.length),
+            cellValue: props.rowData[i].cellValue,
+            cellType: props.rowData[i].type,
+            hidden: props.rowData[i].hidden,
+            isColumn: props.isColumn,
+            sortName: props.isColumn ? props.rowData[i].sortName : ""
           });
 
-          // Data Key
+          // Add data Key
           if (!props.isColumn
-            && props.data[i].dataKeyName) {
-            tr.dataset[props.data[i].dataKeyName] = props.data[i].value;
+            && props.rowData[i].dataKeyName) {
+            const dataKeyName = props.rowData[i].dataKeyName;
+
+            tr.dataset[dataKeyName] = props.rowData[i].cellValue;
           }
       
           tr.appendChild(td);
@@ -191,6 +207,8 @@
           if (!grid.options.cancelSelectOnClick) {
             tr.addEventListener("click", grid.on.rowClick.bind(grid, tr));
           }
+
+          grid.on.rowCreated.call(grid, tr);
         }
 
         return tr;
@@ -202,124 +220,142 @@
           ? document.createElement("th") 
           : document.createElement("td");
         const span = document.createElement("span");
-        let value = null;
+        let cellValue = null;
       
         // Class
         if (props.hidden) {
           td.classList.add("hidden");
         }
-      
-        // todo clean up validations
+       
         // Custom field
-        if (props.type 
-          && props.type.indexOf("|") > -1) {
-          const element = props.type.split("|")[0];
-          const attributes =  props.type.split("|")[1];
-          const control = document.createElement(element);
-          let elementType = "";
-            
-          // Set attributes dynamically
-          attributes.split(",").forEach(function(attribute, index) {
-            const attrName = attribute.split("=")[0];
-            const attrValue = attribute.split("=")[1];
+        if (props.cellType
+          && props.cellType.indexOf("|") > -1) {
+          const control = grid.createCustomControl.call(grid, td, props);
 
-            control.setAttribute(attrName, attrValue);
-
-            if (attrName == "type") {
-              elementType = attrValue;
-            }
-          });
-          
-          // Checkbox
-          if (elementType === "checkbox") {
-            // Class
-            td.classList.add("checkbox");
-      
-            // Events
-            if (props.isColumn) {              
-              control.addEventListener("click", grid.on.checkAll.bind(grid, control));
-            }
-            else {
-              control.addEventListener("click", grid.on.check.bind(grid, control));
-            }
-          }
-      
           span.appendChild(control);
         } else {
           // Set value
           if (props.isColumn) {
-            value = props.value;
+            cellValue = props.cellValue;
           } else {
             // Convert to data type
-            if (props.type === "date") {
-              value =
-                props.value !== ""
-                  ? new Date(props.value).toLocaleDateString()
-                  : props.value;
-            } else if (props.type === "number") {
-              value = Number(props.value);
+            if (props.cellType === "date") {
+              cellValue =
+                props.cellValue !== ""
+                  ? new Date(props.cellValue).toLocaleDateString()
+                  : props.cellValue;
+            } else if (props.cellType === "number") {
+              cellValue = Number(props.cellValue);
             } else {
-              value = props.value;
+              cellValue = props.cellValue;
             }
           }
 
+          // Sorting
           if (props.isColumn
             && !props.hidden
             && grid.options.allowSorting) {
               // Class
               span.classList.add("sortable");
-
+              
               // Attributes
-              span.sortName = props.index;
-              span.sortDirection = -1;
-              //span.setAttribute("sort-name", props.index);
-              //span.setAttribute("sort-direction", "");
+              span.sortName = props.sortName;
+              span.sortDirection = "";
               
               // Event
               span.addEventListener("click", grid.on.sort.bind(grid, span));
           }
       
-          span.appendChild(document.createTextNode(value));
+          span.appendChild(document.createTextNode(cellValue));
         }
         
         td.appendChild(span);
       
         return td;
       },
+      createCustomControl: function(td, props) {
+        const grid = this;
+        const element = props.cellType.split("|")[0];
+        const attributes =  String(props.cellType.split("|")[1]);
+        const control = document.createElement(element);
+        let elementType = "";
+
+        // Set attributes dynamically
+        attributes.split(",").forEach(function(attribute, index) {
+          const attrName = attribute.split("=")[0];
+          const attrValue = attribute.split("=")[1];
+
+          control.setAttribute(attrName, attrValue);
+
+          if (attrName == "type") {
+            elementType = attrValue;
+          }
+        });
+          
+        // Checkbox
+        if (elementType === "checkbox") {
+          // Class
+          td.classList.add("checkbox");
+    
+          // Events
+          if (props.isColumn) {              
+            control.addEventListener("click", grid.on.checkAll.bind(grid, control));
+          }
+          else {
+            control.addEventListener("click", grid.on.check.bind(grid, control));
+          }
+        }
+        
+        return control;
+      },
       on: {
         sort: function(sender, event) {
           const grid = this;
 
-          // Update sort direction { 0: NONE, 1: ASC, 2: DESC}
-          sender.sortDirection = sender.sortDirection < 1
-            ? ++sender.sortDirection
-            : -1;
-          //console.log(sender.sortDirection);
-          // Add to sort list
-          if (sender.sortDirection == 0) {
-            grid.sortList.push(sender.sortName);
+          // Sort list and direction
+          if (sender.sortDirection === "") {
+            sender.sortDirection = "ASC";
+            grid.sortList.push(sender.sortName + " " + sender.sortDirection);
           }
-          else if (sender.sortDirection < 0) {
-            let index = grid.sortList.indexOf(sender.sortName);
-
+          else if (sender.sortDirection === "ASC") {
+            let index = grid.sortList.indexOf(sender.sortName + " " + sender.sortDirection);
+            
+            sender.sortDirection = "DESC";
+            grid.sortList.splice(index, 1, sender.sortName + " " + sender.sortDirection);
+          }
+          else if (sender.sortDirection === "DESC") {
+            let index = grid.sortList.indexOf(sender.sortName + " " + sender.sortDirection);
             grid.sortList.splice(index, 1);
+
+            sender.sortDirection = "";
           }
 
-          // Multiple sort by sort list - todo future implementations
-          //console.log(grid.sortList);
+          console.log(grid.sortList);
 
-          // Single Sort - todo check sort algo
-          const rows = grid.table.querySelectorAll("tbody tr");
-
-          //console.log(rows);
+          // todo web service for sorting
+        },
+        rowCreated: function(sender, event) {
+          const grid = this;
+          
+          if (grid.events.rowCreated
+            && typeof grid.events.rowCreated === "function") {
+              grid.events.rowCreated(sender, event);
+          }
         },
         rowClick: function(sender, event) {
           const grid = this;
 
           // Do default behavior first
+          const row = grid.table.querySelectorAll(".selected");
+          
+          if(row.length) {
+            row[0].classList.remove("selected");
+          }
+          sender.classList.add("selected");
           
           // Call user-defined row click event
-          if (grid.events.rowClick 
+          if (!grid.options.cancelSelectOnClick
+            && grid.events.rowClick 
             && typeof grid.events.rowClick === "function") {
             grid.events.rowClick(sender, event);
           }
