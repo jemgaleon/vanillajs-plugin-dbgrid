@@ -3,10 +3,14 @@
 A simple grid maker javascript plugin. Basically, I'm trying to  somehow implement the .NET GridView control to JavaScript because I need this at work.
 
 Todo(s):
-- [ ] web api call for data
-- [ ] stored procedure for data fetch
+- [ ] fetch data web api
+- [ ] fetch data (paging and sorting feature) stored procedure
+- [ ] sorting web api 
+- [ ] sorting stored procedure
 - [ ] AllowSorting
 - [ ] AllowPaging/PageSize
+- [ ] SelectedIndex
+- [ ] PageIndex
 - [x] DataKeyNames
 
 Issue(s):
@@ -27,12 +31,3 @@ const dbgrid = new DBGrid({
 
 tblWrapper.appendChild(dbgrid);
 ```
-
-Note:
-- Not written in es6 yet
-- Do not expose database! 
-
-let tre = dbgrid.table.querySelectorAll("tbody tr td:nth-child(4)");
-tre.toArray().sort((x,y) => x.textContent.localeCompare(y.textContent))
-let listOfRows = [...tre]
-listOfRows.sort((x,y) => x.textContent.localeCompare(y.textContent)).map( x=> x.textContent)
