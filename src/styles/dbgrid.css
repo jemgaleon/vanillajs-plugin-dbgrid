@@ -28,6 +28,7 @@ tbody tr:hover {
 }
 
 tbody tr.selected {
+  font-weight: bolder;
   color: #fff !important;
   background: #6E6E6E !important;
 }
@@ -50,15 +51,15 @@ tbody td {
   /* text-overflow: ellipsis; */
 }
 
-thead th.checkbox,
-tbody td.checkbox {
-  width: 25px;
+thead th.icon-size,
+tbody td.icon-size {
+  width: 30px;
 }
 
 thead th span,
 tbody td span {
   display: block;
-  padding: 5px;
+  padding: 3px;
 }
 
 .hidden {
