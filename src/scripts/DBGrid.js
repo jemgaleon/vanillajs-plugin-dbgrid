@@ -44,6 +44,7 @@
 
         // Create options by extending with the passed in arguments
         grid.options = extendDefaults(defaults, arguments[0]);
+
         if (arguments[0] && typeof arguments[0] === "object") {
           grid.events = arguments[0].events;
         }
@@ -372,7 +373,8 @@
         rowCreated: function(sender, event) {
           const grid = this;
           
-          if (grid.events.rowCreated
+          if (grid.events
+            && grid.events.rowCreated
             && typeof grid.events.rowCreated === "function") {
               grid.events.rowCreated.call(grid, sender, event);
           }
@@ -390,6 +392,7 @@
           
           // Call user-defined row click event
           if (!grid.options.cancelSelectOnClick
+            && grid.events
             && grid.events.rowClick 
             && typeof grid.events.rowClick === "function") {
             grid.events.rowClick.call(grid, sender, event);
@@ -486,9 +489,10 @@
           }
 
           // Call user-defined check event
-          if (grid.events.toggle 
+          if (grid.events
+            && grid.events.toggle 
             && typeof grid.events.toggle === "function") {
-            grid.events.toggle.call(parent, sender, event);
+            grid.events.toggle.call(grid, parent, sender, event);
           }
 
           event.stopPropagation();
