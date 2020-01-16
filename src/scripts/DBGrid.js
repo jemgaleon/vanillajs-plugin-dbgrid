@@ -36,8 +36,11 @@
         grid.columns = null;
         grid.sortList = [];
         grid.rowData = null;
-        grid.selectedIndex = null;
-        grid.pageIndex = null;
+        //grid.selectedIndex = null;
+        grid.pager = {
+          position: 1,
+          total: 10
+        };
 
         // Create options by extending with the passed in arguments
         grid.options = extendDefaults(defaults, arguments[0]);
@@ -142,7 +145,7 @@
           const tr = grid.createTableRow({
             rowData: rowData
           });
-      
+          
           tbody.appendChild(tr);
         }
 
@@ -397,7 +400,7 @@
 
           // Do default behavior first
           const isChecked = sender.checked;
-          const checkboxes = grid.table.querySelectorAll("tbody input[type=checkbox]");
+          const checkboxes = Array.from(grid.table.querySelectorAll("tbody input[type=checkbox]"));
 
           checkboxes.forEach(function(checkbox) {
             checkbox.checked = isChecked;
@@ -419,7 +422,8 @@
             checkboxAll.checked = false
           }
           else {
-            const checkboxes = grid.table.querySelectorAll("tbody input[type=checkbox]");
+            const checkboxes = Array.from(grid.table.querySelectorAll("tbody input[type=checkbox]"));
+            //const checkboxes = Array.prototype.slice.call(grid.table.querySelectorAll("tbody input[type=checkbox]")) // IE
             let hasUnchecked = false;
 
             checkboxes.forEach(function(checkbox) {
@@ -444,7 +448,7 @@
           const grid = this;
           
           // Do default behavior first
-          const imgToggles = grid.table.querySelectorAll("tbody img[type='toggle']");
+          const imgToggles = Array.from(grid.table.querySelectorAll("tbody img[type='toggle']"));
 
           sender.toggled = !sender.toggled;
           
