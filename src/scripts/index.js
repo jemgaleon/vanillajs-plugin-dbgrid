@@ -1,21 +1,22 @@
-let dbgrid;
+let exposeMe;
 
 (function() {
-  const grdWorksheet = document.getElementById("grdWorksheet");
-  
   // Instance DBGrid Obj
-  dbgrid = new DBGrid({
-    gridName: "WORKLIST",
+  const dbgrid = new DBGrid({
+    wrapper: "#grdWorksheet",
+    gridName: "ASSIGNMENTS",
     additionalCriteria: "",
-    cancelSelectOnClick: false,
     allowSorting: true,
+    cancelSelectOnClick: true,
+    width: 900,
+    height: 200,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
     events: {
       rowCreated: function(sender, event) {
         //console.log(sender);
       },
       rowClick: function(sender, event) {
-        console.log(sender);
+        //console.log(sender);
         console.log(sender.dataset);
         console.log("user row click");
       },
@@ -26,19 +27,50 @@ let dbgrid;
         console.log("user check");
         console.log(this);
       },
-      toggle: function(sender, event) {
+      toggle: function(sender, row, contentRow, event) {
+        const grid = this;
+
         console.log("user toggle: " + sender.toggled);
-        console.log(this);
         
-        // todo need a better way to get selected row
+        if(contentRow.rowCreated) {
+          const td = document.createElement("td");
+
+          td.colSpan = row.children.length - 1; // static count
+
+          const div = document.createElement("div");
+          div.classList.add("toggleWrapper");
+
+          const dbgridChild = new DBGrid({
+            gridName: "WORKSHEETS",
+            cancelSelectOnClick: true,
+            customFields: [
+              { type: "checkbox" }
+            ],
+            columns: [
+              { text: "Section", value: "SECTION", type: "string", dataKey: true },
+              { text: "Description", value: "DESCRIPTION", type: "string", dataKey: true }
+            ],
+            rowData: [
+              [ "FA", "FA-FA Blank Worksheet"],
+              [ "FA", "FA-Microscopy Bullet Case Notes"],
+              [ "FA", "FA-FA Blank Worksheet"],
+              [ "FA", "FA-FA Blank Worksheet"]
+            ]
+          });
+
+          dbgridChild.table.classList.add("tableception");
+          div.appendChild(dbgridChild.table);
+          td.appendChild(div);
+          contentRow.appendChild(td);
+        }
       }
     },
     customFields: [
-      { type: "toggle", hideColumn: true, autoOpen: true },
-      { type: "checkbox" }
+      { type: "toggle", hideColumn: true, autoOpen: false }
     ]
   });
-  
-  grdWorksheet.appendChild(dbgrid.table);
-  grdWorksheet.classList.add("tblWrapper");
+
+  //exposeMe = dbgrid;
+  //grdWorksheet.appendChild(dbgrid.table);
+  //grdWorksheet.classList.add("tblWrapper");
 }());
