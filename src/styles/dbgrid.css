@@ -23,7 +23,7 @@ tbody tr {
   cursor: pointer;
 }
 
-tbody tr:hover {
+tbody tr:not(.grd-toggle-content):hover {
   text-decoration: underline;
 }
 
@@ -33,7 +33,7 @@ tbody tr.selected {
   background: #6E6E6E !important;
 }
 
-tbody tr:nth-child(odd) {
+tbody tr:not(.hidden):nth-child(odd) {
   color: #000;
   background: #f7f6f3;
 }
@@ -41,7 +41,7 @@ tbody tr:nth-child(odd) {
 thead th,
 tbody td {
   text-align: left;
-  vertical-align: middle;
+  vertical-align: top;
 
   overflow: hidden;
   white-space: nowrap;
@@ -49,6 +49,16 @@ tbody td {
   padding: 0;
   margin: 0;
   /* text-overflow: ellipsis; */
+}
+
+thead th.grd-toggle,
+tbody td.grd-toggle {
+  vertical-align: top;
+}
+
+thead th.grd-toggle img,
+tbody td.grd-toggle img {
+  margin: -5px;
 }
 
 thead th.icon-size,

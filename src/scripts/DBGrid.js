@@ -4,6 +4,7 @@
         const grid = this;
         // Define options defaults
         const defaults = {
+            wrapper: "",
             gridName: "",
             additionalCriteria: "",
             allowSorting: true,
@@ -15,6 +16,7 @@
 
             // Add these for structure
             events: {
+              created: null,
               sort: null,
               rowClick: null,
               rowCreated: null,
@@ -33,6 +35,7 @@
 
         // Create global element references
         grid.table = null;
+
         grid.columns = null;
         grid.sortList = [];
         grid.rowData = null;
@@ -57,7 +60,7 @@
     DBGrid.prototype = {
       init: function() {
         const grid = this;
-
+        
         grid.columns = grid.getColumns();
         grid.rowData = grid.getRowData();
       },
@@ -67,12 +70,28 @@
         grid.createTable();
         grid.createTableHead();
         grid.createTableBody();
+        grid.attach();
+
+        grid.on.created.call(grid);
+      },
+      attach: function() {
+        const grid = this;
+
+        if (grid.options.wrapper != "") { 
+          const wrapper = document.querySelector(grid.options.wrapper);
+          
+          wrapper.style.width = grid.options.width + "px";
+          wrapper.style.maxHeight = grid.options.height + "px";
+          wrapper.style.overflow = "auto";
+          
+          wrapper.appendChild(grid.table);
+        }
       },
       getColumns: function() {
         // todo web api call, based on gridname
         const grid = this;
         
-        return [
+        return grid.options.columns || [
           { text: "Exam Key", value: "EXAM_KEY", type: "number", hidden: true, dataKey: true },
           { text: "Case Key", value: "CASE_KEY", type: "number", hidden: true, dataKey: true },
           { text: "Section", value: "SECTION", type: "string", dataKey: true },
@@ -89,7 +108,8 @@
         const grid = this;
 
         // todo web api call
-        return [
+        return grid.options.rowData || 
+        [
           [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
           [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
           [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
@@ -194,16 +214,19 @@
       
         // Create row data
         for (let i = 0; i < props.rowData.length; i++) {
-          const properties = {
-            cellIndex: i + Number(grid.options.customFields.length),
-            cellValue: props.rowData[i].cellValue,
-            cellType: props.rowData[i].type,
-            hidden: props.rowData[i].hidden,
-            isColumn: props.isColumn,
-            sortName: props.isColumn ? props.rowData[i].sortName : ""
-          };
-          const td = grid.createTableData.call(grid, properties, tr);
+          if (!props.rowData[i].hidden) {
+            const properties = {
+              cellIndex: i + Number(grid.options.customFields.length),
+              cellValue: props.rowData[i].cellValue,
+              cellType: props.rowData[i].type,
+              //hidden: props.rowData[i].hidden,
+              isColumn: props.isColumn,
+              sortName: props.isColumn ? props.rowData[i].sortName : ""
+            };
+            const td = grid.createTableData.call(grid, properties, tr);
 
+            tr.appendChild(td);
+          }
           // Add data Key
           if (!props.isColumn
             && props.rowData[i].dataKeyName) {
@@ -211,8 +234,6 @@
 
             tr.dataset[dataKeyName.toLowerCase()] = props.rowData[i].cellValue;
           }
-      
-          tr.appendChild(td);
         }
       
         // Events
@@ -237,9 +258,9 @@
         const span = document.createElement("span");
       
         // Add class
-        if (props.hidden) {
-          td.classList.add("hidden");
-        }
+        // if (props.hidden) {
+        //   td.classList.add("hidden");
+        // }
        
         // Custom field
         if (props.cellType
@@ -253,7 +274,7 @@
           // Sorting
           if (grid.options.allowSorting
             && props.isColumn
-            && !props.hidden
+            //&& !props.hidden
             && props.cellValue !== "") {
               // Add class
               span.classList.add("sortable");
@@ -305,6 +326,7 @@
         if (elementType === "checkbox") {
           // Add class
           td.classList.add("icon-size");
+          td.classList.add("grd-checkbox");
     
           // Events
           if (props.isColumn) {              
@@ -318,20 +340,15 @@
         else if (elementType === "toggle") {
           // Add class
           td.classList.add("icon-size");
+          td.classList.add("grd-toggle");
 
           if (props.isColumn 
             && props.hideColumn) {
             control.classList.add("hidden");
           }
           
-          if (props.autoOpen) {
-            control.toggled = false;
-            control.src = "/src/assets/toggle_collapse.png";
-          }
-          else {
-            control.toggled = true;
-            control.src = "/src/assets/toggle_expand.png";
-          }
+          control.toggled = false;
+          control.src = "/src/assets/toggle_expand.png";
 
           // Events
           if (props.isColumn) {
@@ -340,11 +357,33 @@
           else {
             control.addEventListener("click", grid.on.toggle.bind(grid, tr, control));
           }
+
+          // Moved to grid.on.created()
+          // if (props.autoOpen) {
+          //   control.click();
+          // }
         }
 
         return control;
       },
       on: {
+        created: function() {
+          const grid = this;
+
+          // Do default behavior first
+          if (grid.utility.hasCustomField.call(grid, "toggle")
+            && grid.utility.getCustomField.call(grid, "toggle").autoOpen) {
+            const imgToggleAll = grid.table.querySelector("thead th img[type='toggle']");
+            
+            imgToggleAll.click();
+          }
+          
+          // Call user-defined event
+          if (grid.events
+            && typeof grid.events.created === "function") {
+              grid.events.created.call(grid);
+          }
+        },
         sort: function(sender, event) {
           const grid = this;
 
@@ -373,8 +412,10 @@
         rowCreated: function(sender, event) {
           const grid = this;
           
+          // Do default behavior first
+          
+          // Call user-defined event
           if (grid.events
-            && grid.events.rowCreated
             && typeof grid.events.rowCreated === "function") {
               grid.events.rowCreated.call(grid, sender, event);
           }
@@ -390,10 +431,9 @@
           }
           sender.classList.add("selected");
           
-          // Call user-defined row click event
+          // Call user-defined event
           if (!grid.options.cancelSelectOnClick
             && grid.events
-            && grid.events.rowClick 
             && typeof grid.events.rowClick === "function") {
             grid.events.rowClick.call(grid, sender, event);
           }
@@ -409,26 +449,25 @@
             checkbox.checked = isChecked;
           });
 
-          // Call user-defined check all event
-          if (grid.events.checkAll
+          // Call user-defined event
+          if (grid.events
             && typeof grid.events.checkAll === "function") {
             grid.events.checkAll.call(grid, sender, event);
           }
         },
-        check: function(parent, sender, event) {
+        check: function(row, sender, event) {
           const grid = this;
 
           // Do default behavior first
-          const checkboxAll = grid.table.querySelector("thead input[type=checkbox]");
+          const checkboxAll = grid.table.querySelector("thead th input[type=checkbox]");
 
           if (!sender.checked) {
             checkboxAll.checked = false
           }
           else {
-            const checkboxes = Array.from(grid.table.querySelectorAll("tbody input[type=checkbox]"));
-            //const checkboxes = Array.prototype.slice.call(grid.table.querySelectorAll("tbody input[type=checkbox]")) // IE
+            const checkboxes = Array.from(grid.table.querySelectorAll("tbody td input[type=checkbox]"));
             let hasUnchecked = false;
-
+            
             checkboxes.forEach(function(checkbox) {
               if (!checkbox.checked) {
                 hasUnchecked = true;
@@ -439,10 +478,10 @@
             checkboxAll.checked = !hasUnchecked;
           }
 
-          // Call user-defined check event
-          if (grid.events.check 
+          // Call user-defined event
+          if (grid.events
             && typeof grid.events.check === "function") {
-            grid.events.check.call(parent, sender, event);
+            grid.events.check.call(row, sender, event);
           }
           
           event.stopPropagation();
@@ -451,15 +490,15 @@
           const grid = this;
           
           // Do default behavior first
-          const imgToggles = Array.from(grid.table.querySelectorAll("tbody img[type='toggle']"));
-
+          const imgToggles = Array.from(grid.table.querySelectorAll("tbody td img[type='toggle']"));
+          console.log("auto toggle")
           sender.toggled = !sender.toggled;
           
-          if (sender.toggle) {
-            sender.src = "/src/assets/toggle_expand.png";
+          if (sender.toggled) {
+            sender.src = "/src/assets/toggle_collapse.png";
           }
           else {
-            sender.src = "/src/assets/toggle_collapse.png";
+            sender.src = "/src/assets/toggle_expand.png";
           }
 
           imgToggles.forEach(function(imgToggle, index) {
@@ -467,32 +506,50 @@
             imgToggle.click();
           });
 
-          // Call user-defined check event
-          if (grid.events.toggleAll 
+          // Call user-defined event
+          if (grid.events
             && typeof grid.events.toggleAll === "function") {
             grid.events.toggleAll.call(grid, sender, event);
           }
 
           event.stopPropagation();
         },
-        toggle: function(parent, sender, event) {
+        toggle: function(row, sender, event) {
           const grid = this;
-
-          // Do default behavior first
-          sender.toggled = !sender.toggled;
           
-          if (sender.toggled) {
-            sender.src = "/src/assets/toggle_expand.png";
+          // Do default behavior first          
+          sender.toggled = !sender.toggled;
+
+          let tr = null;
+
+          if (row.nextSibling
+            && row.nextSibling.classList.contains("grd-toggle-content")) {
+            tr = row.nextSibling;
+            tr.rowCreated = false;
           }
           else {
-            sender.src = "/src/assets/toggle_collapse.png";
+            // create new row
+            tr = document.createElement("tr");
+            tr.classList.add("grd-toggle-content");
+            tr.rowCreated = true;
+            tr.appendAfter(row);
           }
 
-          // Call user-defined check event
+          if (sender.toggled) {
+            sender.src = "/src/assets/toggle_collapse.png";
+            tr.classList.remove("hidden");
+            sender.parentNode.parentNode.rowSpan = 2;
+          }
+          else {
+            sender.src = "/src/assets/toggle_expand.png";
+            tr.classList.add("hidden");            
+            sender.parentNode.parentNode.removeAttribute("rowspan");
+          }
+
+          // Call user-defined event
           if (grid.events
-            && grid.events.toggle 
             && typeof grid.events.toggle === "function") {
-            grid.events.toggle.call(grid, parent, sender, event);
+            grid.events.toggle.call(grid, sender, row , tr, event);
           }
 
           event.stopPropagation();
@@ -514,6 +571,35 @@
           }
 
           return newValue;
+        },
+        hasCustomField: function(name) {
+          const grid = this;
+          const customFields = grid.options.customFields;
+          let hasCustomField = false;
+          
+          for(let i = 0; i < customFields.length; i++) {
+            if (customFields[i].type == name) {
+              hasCustomField = true;
+              break;
+            }
+          }
+
+          return hasCustomField;
+        },
+        getCustomField: function(name) {
+          const grid = this;
+          const customFields = grid.options.customFields;
+          let customField = null;
+          
+          for(let i = 0; i < customFields.length; i++) {
+            if (customFields[i].type == name) {
+              customField = customFields[i];
+
+              break;
+            }
+          }
+
+          return customField;
         }
       }
     };
