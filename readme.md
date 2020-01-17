@@ -3,18 +3,20 @@
 A simple grid maker javascript plugin. Basically, I'm trying to  somehow implement the .NET GridView control to JavaScript because I need this at work.
 
 Todo(s):
-- [ ] fetch data web api
-- [ ] fetch data (paging and sorting feature) stored procedure
-- [ ] sorting web api 
-- [ ] sorting stored procedure
+- [ ] Fetch data web api
+- [ ] Fetch data (paging and sorting feature) stored procedure
+- [ ] Sorting web api 
+- [ ] Sorting stored procedure
 - [ ] AllowSorting
 - [ ] AllowPaging/PageSize
 - [ ] SelectedIndex
 - [ ] PageIndex
+- [x] Toggle feature
 - [x] DataKeyNames
 
 Issue(s):
-- Checkbox click triggers row click
+- [ ] Toggle issue row background nth-child(odd)
+- [x] Checkbox click triggers row click
 
 Usage:
 ```javascript
