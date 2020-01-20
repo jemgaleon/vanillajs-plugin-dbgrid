@@ -1,6 +1,6 @@
-# DBGrid Plugin
+# GridView Javascript Plugin
 
-A simple grid maker javascript plugin. Basically, I'm trying to  somehow implement the .NET GridView control to JavaScript because I need this at work.
+A simple JavaScript implementation of the .NET GridView control (and some of our GridView custom control).
 
 Todo(s):
 - [ ] Fetch data web api
