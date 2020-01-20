@@ -372,26 +372,26 @@
           totalRecords: props.totalRecords
         });
 
-        // // show ... (prev)
-        // if () {
-        //   const a = document.createElement("a");
+        // show ... (prev)
+        if (pageGroup > 1) {
+          const a = document.createElement("a");
           
-        //   a.appendChild(document.createTextNode("..."));
+          a.appendChild(document.createTextNode("..."));
 
-        //   // Attibute
-        //   //a.setAttribute("value", "prev");
-        //   // Event
-        //   //a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
+          // Attibute
+          //a.setAttribute("value", "prev");
+          // Event
+          //a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
           
-        //   //th.appendChild(a);
-        // }
+          th.appendChild(a);
+        }
 
         // show 1 2 3 (current)
         for (let i = 1; i <= pageCount; i++) {
           const a = document.createElement("a");
 
           // Add class
-          if (props.pageIndex === i) {
+          if (props.selectedPageIndex === i) {
             a.classList.add("selected");
           }
 
