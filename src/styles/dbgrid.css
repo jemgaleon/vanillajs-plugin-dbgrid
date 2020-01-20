@@ -5,25 +5,38 @@ table {
   box-sizing: border-box;
 }
 
-thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+table * {
+  padding: 0;
+  margin: 0;
+}
 
+thead th,
+tfoot th {
   color: #fff;
   background: #5d7b9d;
 }
 
-thead th span.sortable {
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+thead th a.sortable,
+tfoot th a:not(.selected) {
   text-decoration: underline;
   cursor: pointer;
+}
+
+tfoot th a {
+  font-weight: normal;
 }
 
 tbody tr {
   cursor: pointer;
 }
 
-tbody tr:not(.grd-toggle-content):hover {
+tbody tr:not(.toggle-content):hover {
   text-decoration: underline;
 }
 
@@ -39,7 +52,8 @@ tbody tr:not(.hidden):nth-child(odd) {
 }
 
 thead th,
-tbody td {
+tbody td,
+tfoot th {
   text-align: left;
   vertical-align: top;
 
@@ -51,13 +65,13 @@ tbody td {
   /* text-overflow: ellipsis; */
 }
 
-thead th.grd-toggle,
-tbody td.grd-toggle {
+thead th.icon-toggle,
+tbody td.icon-toggle {
   vertical-align: top;
 }
 
-thead th.grd-toggle img,
-tbody td.grd-toggle img {
+thead th.icon-toggle img,
+tbody td.icon-toggle img {
   margin: -5px;
 }
 
@@ -67,9 +81,15 @@ tbody td.icon-size {
 }
 
 thead th span,
+thead th a,
 tbody td span {
   display: block;
   padding: 3px;
+}
+
+tfoot th a {
+  display: inline-block;
+  padding: 1.5px;
 }
 
 .hidden {

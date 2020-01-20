@@ -7,7 +7,8 @@ let exposeMe;
     gridName: "ASSIGNMENTS",
     additionalCriteria: "",
     allowSorting: true,
-    cancelSelectOnClick: true,
+    allowPaging: true,
+    cancelSelectOnClick: false,
     width: 900,
     height: 200,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
@@ -35,7 +36,7 @@ let exposeMe;
         if(contentRow.rowCreated) {
           const td = document.createElement("td");
 
-          td.colSpan = row.children.length - 1; // static count
+          td.colSpan = row.children.length - 1; // minus toggle count
 
           const div = document.createElement("div");
           div.classList.add("toggleWrapper");
@@ -62,6 +63,8 @@ let exposeMe;
           div.appendChild(dbgridChild.table);
           td.appendChild(div);
           contentRow.appendChild(td);
+
+          //exposeMe = dbgridChild;
         }
       }
     },
@@ -70,7 +73,7 @@ let exposeMe;
     ]
   });
 
-  //exposeMe = dbgrid;
+  exposeMe = dbgrid;
   //grdWorksheet.appendChild(dbgrid.table);
   //grdWorksheet.classList.add("tblWrapper");
 }());
