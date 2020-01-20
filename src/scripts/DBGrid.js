@@ -13,18 +13,19 @@
             pagerCount: 10,
             cancelSelectOnClick: false,
             width: 700,
-            height: 300,
-
-            // Add these for structure
+            height: 300
+            
+            /* Structure:
             events: {
               created: null,
-              sort: null,
+              sorted: null,
               rowClick: null,
               rowCreated: null,
               checkAll: null,
               check: null,
               toggleAll: null,
-              toggle: null
+              toggle: null,
+              pageIndexChanged: null
             },
             dataKeyNames: [],
             customFields: [
@@ -32,6 +33,7 @@
               { type: "toggle", hideColumn: true, autoOpen: true },
               { type: "checkbox" }
             ]
+            */
         }
 
         // Create options by extending with the passed in arguments
@@ -49,7 +51,7 @@
         grid.rowData = null;
         grid.sortList = [];
         grid.totalRecords = 0;
-        grid.selectedPageIndex = -1;
+        grid.selectedPageIndex = 1;
         grid.selectedIndex = -1;
 
         grid.init();
@@ -96,42 +98,30 @@
         wrapper.appendChild(grid.table);
       },
       getColumns: function() {
-        // todo web api call, based on gridname
         const grid = this;
         
-        return grid.options.columns || [
-          { text: "Exam Key", value: "EXAM_KEY", type: "number", hidden: true, dataKey: true },
-          { text: "Case Key", value: "CASE_KEY", type: "number", hidden: true, dataKey: true },
-          { text: "Section", value: "SECTION", type: "string", dataKey: true },
-          { text: "Priority", value: "PRIORITY", type: "string", dataKey: true },
-          { text: "Lab #", value: "LAB_NUMBER", type: "string" },
-          { text: "Date Assigned", value: "DATE_ASSIGNED", type: "date" },
-          { text: "Due Date", value: "DUE_DATE", type: "date" },
-          { text: "Status", value: "STATUS", type: "string" },
-          { text: "Complaint Number", value: "COMPLAINT NUMBER", type: "string" },
-          { text: "Items", value: "ITEMS", type: "string" }
-        ]
+        const params = {
+          gridName: grid.options.gridName
+        };
+
+        return grid.service.getColumns(params) || grid.options.columns;
       },
       getRowData: function () {
         const grid = this;
 
-        // todo web api call
-        return grid.options.rowData || 
-        [
-          [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
-          [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
-          [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [4,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [7,1,"BAC","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [8,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [9,1,"FA","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-          [10,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
-        ];
+        const params = {
+          gridName: grid.options.gridName,
+          pageSize: grid.options.pageSize,
+          selectedPageIndex: grid.selectedPageIndex,
+          sortList: grid.sortList
+        };
+
+        return grid.service.getRowData(params) || grid.options.rowData;
       },
       getTotalRecords: function() {
-        return 103;
+        const grid = this;
+
+        return grid.service.getTotalRecords();
       },
       createTable: function() {
           const grid = this;
@@ -184,6 +174,12 @@
           tbody.appendChild(tr);
         }
 
+        if (grid.table.tBodies.length > 0) {
+          for (let i = 0; i < grid.rowData.length; i++) {
+            grid.table.deleteRow(1);
+          };
+        }
+
         grid.table.appendChild(tbody);
 
         return tbody;
@@ -203,6 +199,7 @@
         });
 
         tfoot.appendChild(tr);
+        grid.table.deleteTFoot();
         grid.table.appendChild(tfoot);
 
         return tfoot;
@@ -324,7 +321,7 @@
           control.setAttribute("sortDirection", "");
           
           // Event
-          control.addEventListener("click", grid.on.sort.bind(grid, control));
+          control.addEventListener("click", grid.on.sorted.bind(grid, control));
         }
         else
         {
@@ -356,38 +353,47 @@
         const props = arguments[0];
 
         const th = document.createElement("th") 
+        const pageGroup = Math.ceil(props.selectedPageIndex / props.pagerCount);
+        const totalPages = Math.ceil(props.totalRecords / props.pageSize);
 
-        props.pageSize = 5;
-        props.selectedPageIndex = 21;
+        // console.log({
+        //   totalPages: totalPages, // total number of pages (total records divided by page size)
+        //   pageSize: props.pageSize, // how may rows per page
+        //   pagerCount: props.pagerCount, // how many page number will be visible 
+        //   pageGroup: pageGroup, // groupings of page number (group 1: pages 1 to pager count)
+        //   selectedPageIndex: props.selectedPageIndex, // current page index
+        //   totalRecords: props.totalRecords // total number of records
+        // });
 
-        const pageGroup = Math.ceil(props.selectedPageIndex / props.pageSize);
-        const pageCount = Math.ceil(props.totalRecords / props.pageSize);
-
-        console.log({
-          pageGroup: pageGroup,
-          pageCount: pageCount,
-          pageSize: props.pageSize,
-          pagerCount: props.pagerCount,
-          selectedPageIndex: props.selectedPageIndex,
-          totalRecords: props.totalRecords
-        });
-
-        // show ... (prev)
+        // Add previous paging
         if (pageGroup > 1) {
           const a = document.createElement("a");
           
           a.appendChild(document.createTextNode("..."));
 
           // Attibute
-          //a.setAttribute("value", "prev");
+          a.setAttribute("value", "previous");
+          
           // Event
-          //a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
+          a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
           
           th.appendChild(a);
         }
 
-        // show 1 2 3 (current)
-        for (let i = 1; i <= pageCount; i++) {
+        // Add paging
+        let startIndex = (pageGroup - 1) * props.pagerCount;
+        let endIndex = Math.min(pageGroup * props.pagerCount, totalPages);
+        
+        if (pageGroup === Math.ceil(totalPages / props.pagerCount))
+        {
+          startIndex = totalPages - props.pagerCount;
+          endIndex = totalPages;
+
+          props.selectedPageIndex = totalPages;
+          grid.selectedPageIndex = totalPages;
+        }
+        
+        for (let i = startIndex + 1; i <= endIndex; i++) {
           const a = document.createElement("a");
 
           // Add class
@@ -398,26 +404,28 @@
           a.appendChild(document.createTextNode(i));
 
           // Attibute
-          //a.setAttribute("index", i);
+          a.setAttribute("value", i);
+          
           // Event
-          //a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
+          a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
           
           th.appendChild(a);
         }
 
-        // // show ... (next)
-        // if () {
-        //   const a = document.createElement("a");
+        // Add next paging
+        if (props.selectedPageIndex < totalPages) {
+          const a = document.createElement("a");
           
-        //   a.appendChild(document.createTextNode("..."));
+          a.appendChild(document.createTextNode("..."));
           
-        //   // Attibute
-        //   //a.setAttribute("value", "next");
-        //   // Event
-        //   //a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
+          // Attibute
+          a.setAttribute("value", "next");
           
-        //   //th.appendChild(a);
-        // }
+          // Event
+          a.addEventListener("click", grid.on.pageIndexChanged.bind(grid, a));
+          
+          th.appendChild(a);
+        }
 
         // Attributes
         th.setAttribute("colspan", grid.table.tHead.querySelectorAll("th").length);
@@ -524,30 +532,45 @@
               grid.events.created.call(grid);
           }
         },
-        sort: function(sender, event) {
+        sorted: function(sender, event) {
           const grid = this;
-
+          
+          // Do default behavior first
           // Sort list and direction
-          if (sender.sortDirection === "") {
-            sender.sortDirection = "ASC";
-            grid.sortList.push(sender.sortName + " " + sender.sortDirection);
-          }
-          else if (sender.sortDirection === "ASC") {
-            let index = grid.sortList.indexOf(sender.sortName + " " + sender.sortDirection);
-            
-            sender.sortDirection = "DESC";
-            grid.sortList.splice(index, 1, sender.sortName + " " + sender.sortDirection);
-          }
-          else if (sender.sortDirection === "DESC") {
-            let index = grid.sortList.indexOf(sender.sortName + " " + sender.sortDirection);
-            grid.sortList.splice(index, 1);
+          const sortName = sender.getAttribute("sortName");
+          let sortDirection = sender.getAttribute("sortDirection");
 
-            sender.sortDirection = "";
+          if (sortDirection === "") {
+            sortDirection = "ASC";
+            sender.setAttribute("sortDirection", sortDirection);
+            grid.sortList.push(sortName + " " + sortDirection);
+          }
+          else if (sortDirection === "ASC") {
+            let index = grid.sortList.indexOf(sortName + " " + sortDirection);
+
+            sortDirection = "DESC";
+            sender.setAttribute("sortDirection", sortDirection);
+            grid.sortList.splice(index, 1, sortName + " " + sortDirection);
+          }
+          else if (sortDirection === "DESC") {
+            let index = grid.sortList.indexOf(sortName + " " + sortDirection);
+            
+            sortDirection = "";
+            sender.setAttribute("sortDirection", sortDirection);
+            grid.sortList.splice(index, 1);
           }
 
           console.log(grid.sortList);
 
-          // todo web service for sorting
+          // Update table
+          grid.getRowData();
+          grid.createTableBody();
+          
+          // Call user-defined event
+          if (grid.events
+            && typeof grid.events.sorted === "function") {
+              grid.events.sorted.call(grid, sender, event);
+          }
         },
         rowCreated: function(sender, event) {
           const grid = this;
@@ -657,7 +680,7 @@
         toggle: function(row, sender, event) {
           const grid = this;
           
-          // Do default behavior first          
+          // Do default behavior first
           sender.toggled = !sender.toggled;
 
           let tr = null;
@@ -696,6 +719,33 @@
         },
         pageIndexChanged: function(sender, event) {
           const grid = this;
+
+          // Do default behavior first
+          const value = sender.getAttribute("value");
+          let selectedPageIndex = Number(grid.selectedPageIndex);
+          const pageGroup = Math.ceil(selectedPageIndex / grid.options.pagerCount);
+
+          if (value === "previous") {
+            selectedPageIndex = ((pageGroup - 2) * grid.options.pagerCount) + 1; // add offset 1
+          }
+          else if (value === "next") {
+            selectedPageIndex = (pageGroup * grid.options.pagerCount) + 1; // add offset 1
+          }
+          else {
+            selectedPageIndex = Number(value);
+          }
+
+          grid.selectedPageIndex = selectedPageIndex;
+
+          // Update table
+          grid.getRowData();
+          grid.createTableFoot();
+
+          // Call user-defined event
+          if (grid.events
+            && typeof grid.events.pageIndexChanged === "function") {
+            grid.events.pageIndexChanged.call(grid, sender, event);
+          }
         }
       },
       utility: {
@@ -743,6 +793,17 @@
           }
 
           return customField;
+        }
+      },
+      service: {
+        getColumns: function() {
+          return null;
+        },
+        getRowData: function() {
+          return null;
+        },
+        getTotalRecords: function() {
+          return 323;
         }
       }
     };
