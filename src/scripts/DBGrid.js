@@ -356,14 +356,14 @@
         const pageGroup = Math.ceil(props.selectedPageIndex / props.pagerCount);
         const totalPages = Math.ceil(props.totalRecords / props.pageSize);
 
-        // console.log({
-        //   totalPages: totalPages, // total number of pages (total records divided by page size)
-        //   pageSize: props.pageSize, // how may rows per page
-        //   pagerCount: props.pagerCount, // how many page number will be visible 
-        //   pageGroup: pageGroup, // groupings of page number (group 1: pages 1 to pager count)
-        //   selectedPageIndex: props.selectedPageIndex, // current page index
-        //   totalRecords: props.totalRecords // total number of records
-        // });
+        console.log({
+          totalPages: totalPages, // total number of pages (total records divided by page size)
+          pageSize: props.pageSize, // how may rows per page
+          pagerCount: props.pagerCount, // how many page number will be visible 
+          pageGroup: pageGroup, // groupings of page number (group 1: pages 1 to pager count)
+          selectedPageIndex: props.selectedPageIndex, // current page index
+          totalRecords: props.totalRecords // total number of records
+        });
 
         // Add previous paging
         if (pageGroup > 1) {
@@ -383,9 +383,11 @@
         // Add paging
         let startIndex = (pageGroup - 1) * props.pagerCount;
         let endIndex = Math.min(pageGroup * props.pagerCount, totalPages);
-        
-        if (pageGroup === Math.ceil(totalPages / props.pagerCount))
-        {
+        if (totalPages != props.pagerCount
+          && pageGroup === Math.ceil(totalPages / props.pagerCount))
+          {
+          // todo issue on last index
+          console.log("custom")
           startIndex = totalPages - props.pagerCount;
           endIndex = totalPages;
 
@@ -736,7 +738,7 @@
           }
 
           grid.selectedPageIndex = selectedPageIndex;
-
+          
           // Update table
           grid.getRowData();
           grid.createTableFoot();

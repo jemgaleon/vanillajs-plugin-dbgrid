@@ -1,16 +1,16 @@
-let exposeMe;
-
 (function() {
   // Instance DBGrid Obj
   const dbgrid = new DBGrid({
     wrapper: "#grdWorksheet",
-    gridName: "ASSIGNMENTS",
+    gridName: "WORKSHEET",
     additionalCriteria: "",
     allowSorting: true,
     allowPaging: true,
+    pageSize: 10,
+    pagerCount: 10,
     cancelSelectOnClick: false,
     width: 900,
-    height: 200,
+    height: 300,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
     columns: [
       { text: "Exam Key", value: "EXAM_KEY", type: "number", hidden: true, dataKey: true },
@@ -94,6 +94,4 @@ let exposeMe;
       { type: "toggle", hideColumn: true, autoOpen: false }
     ]
   });
-
-  exposeMe = dbgrid;
 }());

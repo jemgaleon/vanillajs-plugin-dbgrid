@@ -28,7 +28,7 @@ tfoot th a:not(.selected) {
   cursor: pointer;
 }
 
-tfoot th a {
+tfoot th a:not(.selected) {
   font-weight: normal;
 }
 
