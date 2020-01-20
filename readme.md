@@ -7,10 +7,10 @@ Todo(s):
 - [ ] Fetch data (paging and sorting feature) stored procedure
 - [ ] Sorting web api 
 - [ ] Sorting stored procedure
-- [ ] AllowSorting
-- [ ] AllowPaging/PageSize
+- [x] AllowSorting
+- [x] AllowPaging/PageSize
 - [ ] SelectedIndex
-- [ ] PageIndex
+- [x] PageIndex
 - [x] Toggle feature
 - [x] DataKeyNames
 
