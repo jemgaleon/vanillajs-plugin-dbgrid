@@ -13,13 +13,17 @@
             pagerCount: 10,
             cancelSelectOnClick: false,
             width: 700,
-            height: 300
+            height: 300,
+            serviceURL: {
+              getColumns: "",
+              getRowData: "",
+            }
             
             /* Structure:
             events: {
               created: null,
               sorted: null,
-              rowClick: null,
+              selectedIndexChanged: null,
               rowCreated: null,
               checkAll: null,
               check: null,
@@ -54,6 +58,7 @@
         grid.selectedPageIndex = 1;
         grid.selectedIndex = -1;
 
+        // Initialization
         grid.init();
         grid.create();
 
@@ -136,11 +141,12 @@
         const thead = document.createElement("thead");
         const rowData = grid.columns.map(function(column, index) {
           return {
-            cellValue: column.text,
-            type: column.type,
-            hidden: column.hidden,
-            dataKeyName: column.dataKey ? column.value : "",
-            sortName: column.value
+            cellValue: column.fieldHeader,
+            type: column.fieldType,
+            width: column.fieldWidth,
+            hidden: column.hideField,
+            dataKeyName: column.dataKeyField ? column.fieldName : "",
+            sortName: column.fieldName
           }
         }, []);
         const tr = grid.createTableRow({
@@ -161,9 +167,10 @@
           const rowData =  grid.rowData[i].map(function(cell, index) {
             return {
               cellValue: cell,
-              type: grid.columns[index].type,
-              hidden: grid.columns[index].hidden,
-              dataKeyName: grid.columns[index].dataKey ? grid.columns[index].value : ""
+              type: grid.columns[index].fieldType,
+              width: grid.columns[index].fieldWidth,
+              hidden: grid.columns[index].hideField,
+              dataKeyName: grid.columns[index].dataKeyField ? grid.columns[index].fieldName : ""
             }
           }, []);
           const tr = grid.createTableRow({
@@ -242,6 +249,9 @@
         for (let i = 0; i < props.rowData.length; i++) {
           let tableDataProps = {};
           let cellValue = props.rowData[i].cellValue;
+          let width = Number(props.rowData[i].width)
+            ? Number(props.rowData[i].width) + "px"
+            : "50px";
 
           if (!props.rowData[i].hidden) {
             // Table head
@@ -252,6 +262,7 @@
               };
   
               const th = grid.createTableHeadData(tableDataProps);
+              th.style.width = width;
               tr.appendChild(th);
             }
             // Table foot
@@ -274,6 +285,7 @@
               };
   
               const td = grid.createTableData(tableDataProps);
+              td.style.width = width;
               tr.appendChild(td);
             }
           }
@@ -290,7 +302,7 @@
         // Events
         if (props.isBody) {
           if (!grid.options.cancelSelectOnClick) {
-            tr.addEventListener("click", grid.on.rowClick.bind(grid, tr));
+            tr.addEventListener("click", grid.on.selectedIndexChanged.bind(grid, tr));
           }
 
           grid.on.rowCreated.call(grid, tr);
@@ -354,14 +366,14 @@
         const pageGroup = Math.ceil(props.selectedPageIndex / props.pagerCount);
         const totalPages = Math.ceil(props.totalRecords / props.pageSize);
 
-        console.log({
-          totalPages: totalPages, // total number of pages (total records divided by page size)
-          pageSize: props.pageSize, // how may rows per page
-          pagerCount: props.pagerCount, // how many page number will be visible 
-          pageGroup: pageGroup, // groupings of page number (group 1: pages 1 to pager count)
-          selectedPageIndex: props.selectedPageIndex, // current page index
-          totalRecords: props.totalRecords // total number of records
-        });
+        // console.log({
+        //   totalPages: totalPages, // total number of pages (total records divided by page size)
+        //   pageSize: props.pageSize, // how may rows per page
+        //   pagerCount: props.pagerCount, // how many page number will be visible 
+        //   pageGroup: pageGroup, // groupings of page number (group 1: pages 1 to pager count)
+        //   selectedPageIndex: props.selectedPageIndex, // current page index
+        //   totalRecords: props.totalRecords // total number of records
+        // });
 
         // Add previous paging
         if (pageGroup > 1) {
@@ -584,24 +596,6 @@
               grid.events.rowCreated.call(grid, sender, event);
           }
         },
-        rowClick: function(sender, event) {
-          const grid = this;
-
-          // Do default behavior first
-          const row = grid.table.tBodies[0].querySelectorAll("tr.selected");
-
-          if(row.length) {
-            row[0].classList.remove("selected");
-          }
-          sender.classList.add("selected");
-          
-          // Call user-defined event
-          if (!grid.options.cancelSelectOnClick
-            && grid.events
-            && typeof grid.events.rowClick === "function") {
-            grid.events.rowClick.call(grid, sender, event);
-          }
-        },
         checkAll: function(sender, event) {
           const grid = this;
 
@@ -717,6 +711,24 @@
           }
 
           event.stopPropagation();
+        },
+        selectedIndexChanged: function(sender, event) {
+          const grid = this;
+
+          // Do default behavior first
+          const row = grid.table.tBodies[0].querySelectorAll("tr.selected");
+
+          if(row.length) {
+            row[0].classList.remove("selected");
+          }
+          sender.classList.add("selected");
+          
+          // Call user-defined event
+          if (!grid.options.cancelSelectOnClick
+            && grid.events
+            && typeof grid.events.selectedIndexChanged === "function") {
+            grid.events.selectedIndexChanged.call(grid, sender, event);
+          }
         },
         pageIndexChanged: function(sender, event) {
           const grid = this;
