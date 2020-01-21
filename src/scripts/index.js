@@ -6,9 +6,9 @@
     additionalCriteria: "",
     allowSorting: true,
     allowPaging: true,
-    pageSize: 10,
+    pageSize: 5,
     pagerCount: 10,
-    cancelSelectOnClick: false,
+    cancelSelectOnClick: true,
     width: 900,
     height: 300,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
@@ -29,12 +29,12 @@
       [2,1,"CS","Normal","2009-0003","01/01/2020","01/01/2020","Draft Printed","2009-000-114","1,2"],
       [3,1,"CSAS","High","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
       [4,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [7,1,"BAC","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [8,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [9,1,"FA","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
-      [10,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
+      [5,1,"BAC","Low","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
+      // [6,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+      // [7,1,"BAC","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+      // [8,1,"CSAS","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+      // [9,1,"FA","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
+      // [10,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
     ],
     events: {
       rowCreated: function(sender, event) {
@@ -59,12 +59,7 @@
         
         if(contentRow.rowCreated) {
           const td = document.createElement("td");
-
-          td.setAttribute("colSpan", row.children.length - 1); // minus toggle count
-
           const div = document.createElement("div");
-          div.classList.add("toggleWrapper");
-
           const dbgridChild = new DBGrid({
             gridName: "WORKSHEETS",
             cancelSelectOnClick: true,
@@ -83,9 +78,11 @@
             ]
           });
 
-          dbgridChild.table.classList.add("tableception");
+          dbgridChild.table.classList.add("tableception"); // header index issue fix
           div.appendChild(dbgridChild.table);
+          div.classList.add("toggleWrapper");
           td.appendChild(div);
+          td.setAttribute("colSpan", row.children.length - 1); // minus toggle count
           contentRow.appendChild(td);
         }
       }
