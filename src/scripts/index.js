@@ -36,6 +36,7 @@
       // [9,1,"FA","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"],
       // [10,1,"BIO","Normal","2009-0003","01/01/2020","","Approved","2009-000-1234","3,4,5"]
     ],
+    totalRecords: 5,
     events: {
       rowCreated: function(sender, event) {
         //console.log(sender);

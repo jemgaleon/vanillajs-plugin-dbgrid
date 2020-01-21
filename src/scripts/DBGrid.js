@@ -12,6 +12,7 @@
             pageSize: 10,
             pagerCount: 10,
             cancelSelectOnClick: false,
+            emptyDataText: "No records found.",
             width: 700,
             height: 300,
             serviceURL: {
@@ -51,8 +52,8 @@
         grid.table = null;
 
         // Data-driven properties
-        grid.columns = null;
-        grid.rowData = null;
+        grid.columns = [];
+        grid.rowData = [];
         grid.sortList = [];
         grid.totalRecords = 0;
         grid.selectedPageIndex = 1;
@@ -72,19 +73,32 @@
       init: function() {
         const grid = this;
         
+        // Init column data
         grid.columns = grid.getColumns();
-        grid.rowData = grid.getRowData();
-        grid.totalRecords = grid.getTotalRecords();
+        
+        // Init row data
+        const data = grid.getRowData();
+        grid.rowData = data.rowData;
+        grid.totalRecords = data.totalRecords;
       },
       create: function() {
         const grid = this;
 
+        // Create table
         grid.createTable();
-        grid.createTableHead();
-        grid.createTableBody();
 
-        if (grid.options.allowPaging) {
-          grid.createTableFoot();
+        // Create empty table
+        if (!grid.rowData.length) {
+          grid.createTableCaption();
+        }
+        // Create table content
+        else {
+          grid.createTableHead();
+          grid.createTableBody();
+
+          if (grid.options.allowPaging) {
+            grid.createTableFoot();
+          }
         }
 
         grid.on.created.call(grid);
@@ -113,20 +127,28 @@
       },
       getRowData: function () {
         const grid = this;
+        
+        if (!grid.options.rowData.length) {
+          const params = {
+            gridName: grid.options.gridName,
+            pageSize: grid.options.pageSize,
+            selectedPageIndex: grid.selectedPageIndex,
+            sortList: grid.sortList
+          };
 
-        const params = {
-          gridName: grid.options.gridName,
-          pageSize: grid.options.pageSize,
-          selectedPageIndex: grid.selectedPageIndex,
-          sortList: grid.sortList
-        };
+          const data = grid.service.getRowData(params);
 
-        return grid.options.rowData || grid.service.getRowData(params);
-      },
-      getTotalRecords: function() {
-        const grid = this;
-
-        return grid.service.getTotalRecords();
+          return {
+            rowData: data.rowData,
+            totalRecords: data.totalRecords
+          }
+        }
+        else {
+          return {
+            rowData: grid.options.rowData,
+            totalRecords: grid.options.totalRecords
+          }
+        }
       },
       createTable: function() {
           const grid = this;
@@ -138,6 +160,10 @@
       },
       createTableHead: function() {
         const grid = this;
+        
+        if (!grid.columns.length)
+          return;
+        
         const thead = document.createElement("thead");
         const rowData = grid.columns.map(function(column, index) {
           return {
@@ -159,8 +185,22 @@
 
         return thead;
       },
+      createTableCaption: function() {
+        const grid = this;
+
+        const caption = document.createElement("caption");
+        caption.appendChild(document.createTextNode(grid.options.emptyDataText));
+        
+        grid.table.appendChild(caption);
+
+        return caption;
+      },
       createTableBody: function() {
         const grid = this;
+
+        if (!grid.rowData.length)
+          return;
+
         const tbody = document.createElement("tbody");       
 
         for(let i = 0; i < grid.rowData.length; i++) {
@@ -191,6 +231,10 @@
       },
       createTableFoot: function() {
         const grid = this;
+
+        if (!grid.totalRecords)
+          return;
+
         const tfoot = document.createElement("tfoot");
         const rowData = [{
           pageSize: grid.options.pageSize,
@@ -814,10 +858,10 @@
           return [];
         },
         getRowData: function() {
-          return [];
-        },
-        getTotalRecords: function() {
-          return 115;
+          return {
+            rowData: [],
+            totalRecords: 0
+          };
         }
       }
     };

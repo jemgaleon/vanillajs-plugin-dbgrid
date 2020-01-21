@@ -10,6 +10,11 @@ table * {
   margin: 0;
 }
 
+table caption {
+  text-align: left;
+  font-style: italic;
+}
+
 thead th,
 tfoot th {
   color: #fff;
