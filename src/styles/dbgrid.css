@@ -46,7 +46,8 @@ tbody tr.selected {
   background: #6E6E6E !important;
 }
 
-tbody tr:not(.hidden):nth-child(odd) {
+/* tbody tr:not(.hidden):nth-child(odd) { */
+tbody tr:not(.hidden) {
   color: #000;
   background: #f7f6f3;
 }
