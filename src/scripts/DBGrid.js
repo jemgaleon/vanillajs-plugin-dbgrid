@@ -104,7 +104,7 @@
           gridName: grid.options.gridName
         };
 
-        return grid.service.getColumns(params) || grid.options.columns;
+        return grid.options.columns || grid.service.getColumns(params);
       },
       getRowData: function () {
         const grid = this;
@@ -116,7 +116,7 @@
           sortList: grid.sortList
         };
 
-        return grid.service.getRowData(params) || grid.options.rowData;
+        return grid.options.rowData || grid.service.getRowData(params);
       },
       getTotalRecords: function() {
         const grid = this;
@@ -174,10 +174,8 @@
           tbody.appendChild(tr);
         }
 
-        if (grid.table.tBodies.length > 0) {
-          for (let i = 0; i < grid.rowData.length; i++) {
-            grid.table.deleteRow(1);
-          };
+        if (grid.table.tBodies.length) {
+          grid.table.removeChild(grid.table.tBodies[0]);
         }
 
         grid.table.appendChild(tbody);
@@ -381,21 +379,22 @@
         }
 
         // Add paging
-        let startIndex = (pageGroup - 1) * props.pagerCount;
+        let startIndex = (pageGroup - 1) * props.pagerCount + 1;
         let endIndex = Math.min(pageGroup * props.pagerCount, totalPages);
-        if (totalPages != props.pagerCount
-          && pageGroup === Math.ceil(totalPages / props.pagerCount))
-          {
-          // todo issue on last index
-          console.log("custom")
-          startIndex = totalPages - props.pagerCount;
-          endIndex = totalPages;
-
-          props.selectedPageIndex = totalPages;
-          grid.selectedPageIndex = totalPages;
-        }
         
-        for (let i = startIndex + 1; i <= endIndex; i++) {
+        // todo - show range if last page totalPage - props.pagerCount
+        // if (pageGroup > Math.ceil(totalPages / props.pagerCount))
+        // {
+        //   console.log("test");
+
+        //   startIndex = (totalPages - props.pagerCount) + 1;
+        //   endIndex = totalPages;
+
+        //   //props.selectedPageIndex = totalPages;
+        //   //grid.selectedPageIndex = totalPages;
+        // }
+        
+        for (let i = startIndex; i <= endIndex; i++) {
           const a = document.createElement("a");
 
           // Add class
@@ -415,7 +414,7 @@
         }
 
         // Add next paging
-        if (props.selectedPageIndex < totalPages) {
+        if (pageGroup < Math.ceil(totalPages / props.pagerCount)) {
           const a = document.createElement("a");
           
           a.appendChild(document.createTextNode("..."));
@@ -741,6 +740,7 @@
           
           // Update table
           grid.getRowData();
+          grid.createTableBody();
           grid.createTableFoot();
 
           // Call user-defined event
@@ -799,13 +799,13 @@
       },
       service: {
         getColumns: function() {
-          return null;
+          return [];
         },
         getRowData: function() {
-          return null;
+          return [];
         },
         getTotalRecords: function() {
-          return 323;
+          return 115;
         }
       }
     };
