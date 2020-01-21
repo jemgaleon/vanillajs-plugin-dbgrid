@@ -8,21 +8,21 @@
     allowPaging: true,
     pageSize: 5,
     pagerCount: 10,
-    cancelSelectOnClick: true,
+    cancelSelectOnClick: false,
     width: 900,
     height: 300,
     dataKeyNames: ["EXAM_KEY,CASE_KEY,SECTION,PRIORITY"],
     columns: [
-      { text: "Exam Key", value: "EXAM_KEY", type: "number", hidden: true, dataKey: true },
-      { text: "Case Key", value: "CASE_KEY", type: "number", hidden: true, dataKey: true },
-      { text: "Section", value: "SECTION", type: "string", dataKey: true },
-      { text: "Priority", value: "PRIORITY", type: "string", dataKey: true },
-      { text: "Lab #", value: "LAB_NUMBER", type: "string" },
-      { text: "Date Assigned", value: "DATE_ASSIGNED", type: "date" },
-      { text: "Due Date", value: "DUE_DATE", type: "date" },
-      { text: "Status", value: "STATUS", type: "string" },
-      { text: "Complaint Number", value: "COMPLAINT NUMBER", type: "string" },
-      { text: "Items", value: "ITEMS", type: "string" }
+      { fieldHeader: "Exam Key", fieldName: "EXAM_KEY", fieldType: "number", fieldWidth: 0, hideField: true, dataKeyField: true },
+      { fieldHeader: "Case Key", fieldName: "CASE_KEY", fieldType: "number", fieldWidth: 0, hideField: true, dataKeyField: true },
+      { fieldHeader: "Section", fieldName: "SECTION", fieldType: "string", fieldWidth: 100, hideField: false, dataKeyField: true },
+      { fieldHeader: "Priority", fieldName: "PRIORITY", fieldType: "string", fieldWidth: 100, hideField: false, dataKeyField: true },
+      { fieldHeader: "Lab #", fieldName: "LAB_NUMBER", fieldType: "string", fieldWidth: 100, hideField: false, dataKeyField: false },
+      { fieldHeader: "Date Assigned", fieldName: "DATE_ASSIGNED", fieldType: "date", fieldWidth: 100, hideField: false, dataKeyField: false },
+      { fieldHeader: "Due Date", fieldName: "DUE_DATE", fieldType: "date", fieldWidth: 100, hideField: false, dataKeyField: false },
+      { fieldHeader: "Status", fieldName: "STATUS", fieldType: "string", fieldWidth: 100, hideField: false, dataKeyField: false },
+      { fieldHeader: "Complaint Number", fieldName: "COMPLAINT NUMBER", fieldWidth: 100,fieldType: "string", hideField: false, dataKeyField: false },
+      { fieldHeader: "Items", fieldName: "ITEMS", fieldType: "string", fieldWidth: 100,hideField: false, dataKeyField: false }
     ],
     rowData: [
       [1,1,"FA","Normal","2009-0003","","","Ready For Review","2009-000-1234",""],
@@ -40,16 +40,14 @@
       rowCreated: function(sender, event) {
         //console.log(sender);
       },
-      rowClick: function(sender, event) {
+      selectedIndexChanged: function(sender, event) {
         //console.log(sender);
-        //console.log(sender.dataset);
-        //console.log("user row click");
+        console.log(sender.dataset);
       },
       checkAll: function(sender, event) {
-        //console.log("user check all");
+        //console.log(sender);
       },
       check: function(sender, event) {
-        //console.log("user check");
         //console.log(this);
       },
       toggle: function(sender, row, contentRow, event) {
@@ -63,12 +61,14 @@
           const dbgridChild = new DBGrid({
             gridName: "WORKSHEETS",
             cancelSelectOnClick: true,
+            width: 300,
+            height: 300,
             customFields: [
               { type: "checkbox" }
             ],
             columns: [
-              { text: "Section", value: "SECTION", type: "string", dataKey: true },
-              { text: "Description", value: "DESCRIPTION", type: "string", dataKey: true }
+              { fieldHeader: "Section", fieldName: "SECTION", fieldType: "string", fieldWidth: 100, hideField: false, dataKeyField: true },
+              { fieldHeader: "Description", fieldName: "DESCRIPTION", fieldType: "string", fieldWidth: 200, hideField: false, dataKeyField: true }
             ],
             rowData: [
               [ "FA", "FA-FA Blank Worksheet"],
