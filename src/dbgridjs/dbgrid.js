@@ -1,6 +1,6 @@
-(function() {
+(function () {
   // Constructor
-  this.DBGrid = function() {
+  this.DBGrid = function () {
     const grid = this;
     // Define options defaults
     const defaults = {
@@ -74,7 +74,7 @@
 
   // Public Methods
   DBGrid.prototype = {
-    init: function() {
+    init: function () {
       const grid = this;
 
       // Set init property
@@ -90,7 +90,7 @@
 
       return grid;
     },
-    create: function() {
+    create: function () {
       const grid = this;
 
       // Call event creating before creating the content
@@ -103,7 +103,7 @@
 
       return grid;
     },
-    attach: function() {
+    attach: function () {
       const grid = this;
 
       if (grid.wrapper.childNodes.length > 0) {
@@ -118,7 +118,7 @@
 
       return grid;
     },
-    getWrapper: function() {
+    getWrapper: function () {
       const grid = this;
       let wrapper = null;
 
@@ -136,7 +136,7 @@
 
       return grid;
     },
-    setWrapper: function() {
+    setWrapper: function () {
       const grid = this;
 
       if (grid.wrapper) {
@@ -152,7 +152,7 @@
 
       return grid;
     },
-    showLoading: function() {
+    showLoading: function () {
       const grid = this;
       const img = document.createElement("img");
 
@@ -165,7 +165,7 @@
 
       return grid;
     },
-    hideLoading: function() {
+    hideLoading: function () {
       const grid = this;
 
       grid.table.classList.remove("hidden");
@@ -179,7 +179,7 @@
 
       return grid;
     },
-    showCaption: function() {
+    showCaption: function () {
       const grid = this;
       const caption = arguments[0];
 
@@ -191,7 +191,7 @@
 
       return grid;
     },
-    hideCaption: function() {
+    hideCaption: function () {
       const grid = this;
 
       grid.removeTableCaption();
@@ -204,7 +204,7 @@
 
       return grid;
     },
-    createContent: function() {
+    createContent: function () {
       const grid = this;
 
       // Custom data
@@ -240,7 +240,7 @@
 
       return grid;
     },
-    createTable: function() {
+    createTable: function () {
       const grid = this;
       const table = document.createElement("table");
 
@@ -249,7 +249,7 @@
 
       return grid;
     },
-    createTableCaption: function() {
+    createTableCaption: function () {
       const grid = this;
       const captionText = arguments[0];
 
@@ -263,13 +263,13 @@
 
       return grid;
     },
-    createTableHead: function() {
+    createTableHead: function () {
       const grid = this;
 
       grid.table.deleteTHead();
       grid.table.tHead = document.createElement("thead");
 
-      const rowData = grid.columns.map(function(column) {
+      const rowData = grid.columns.map(function (column) {
         let data = null;
 
         if (column.hasOwnProperty("type")) {
@@ -309,7 +309,7 @@
 
       return grid;
     },
-    createTableBody: function() {
+    createTableBody: function () {
       const grid = this;
 
       if (grid.table.tBodies.length) {
@@ -328,7 +328,7 @@
 
       return grid;
     },
-    createTableFoot: function() {
+    createTableFoot: function () {
       const grid = this;
 
       if (!grid.totalRecords) return;
@@ -353,7 +353,7 @@
 
       return grid;
     },
-    createTableRow: function() {
+    createTableRow: function () {
       const grid = this;
       const props = arguments[0];
 
@@ -454,7 +454,7 @@
 
       return tr;
     },
-    createTableHeadData: function() {
+    createTableHeadData: function () {
       const grid = this;
       const props = arguments[0];
 
@@ -499,7 +499,7 @@
 
       return th;
     },
-    createTableData: function() {
+    createTableData: function () {
       const grid = this;
       const props = arguments[0];
 
@@ -516,7 +516,7 @@
 
       return td;
     },
-    createTableFootData: function() {
+    createTableFootData: function () {
       const grid = this;
       const props = arguments[0];
 
@@ -585,7 +585,7 @@
 
       return th;
     },
-    createCustomTableData: function() {
+    createCustomTableData: function () {
       const grid = this;
       const props = arguments[0];
       const tr = arguments[1];
@@ -606,7 +606,7 @@
 
       return td;
     },
-    createCustomControl: function() {
+    createCustomControl: function () {
       const grid = this;
       const props = arguments[0];
       const tr = arguments[1];
@@ -618,7 +618,7 @@
       let elementType = "";
 
       // Set attributes dynamically
-      attributes.split(",").forEach(function(attribute, index) {
+      attributes.split(",").forEach(function (attribute, index) {
         const attrName = attribute.split("=")[0];
         const attrValue = attribute.split("=")[1];
 
@@ -684,14 +684,14 @@
 
       return control;
     },
-    removeTableCaption: function() {
+    removeTableCaption: function () {
       const grid = this;
 
       grid.table.caption = null;
 
       return grid;
     },
-    removeTableHead: function() {
+    removeTableHead: function () {
       const grid = this;
 
       if (grid.table.tHead) {
@@ -704,7 +704,7 @@
 
       return grid;
     },
-    removeTableBody: function() {
+    removeTableBody: function () {
       const grid = this;
 
       if (grid.table.tBodies.length) {
@@ -715,7 +715,7 @@
 
       return grid;
     },
-    removeTableFoot: function() {
+    removeTableFoot: function () {
       const grid = this;
 
       if (grid.table.tFoot) {
@@ -724,11 +724,11 @@
 
       return grid;
     },
-    addRow: function() {
+    addRow: function () {
       const grid = this;
       const cells = arguments[0]; // [cellvalue, cellvalue, ... cellvalue ];
       const customFields = grid.utility.getCustomFields.call(grid);
-      const rowData = customFields.concat(cells).map(function(cell, index) {
+      const rowData = customFields.concat(cells).map(function (cell, index) {
         let data = null;
 
         if (cell.hasOwnProperty("type")) {
@@ -773,7 +773,7 @@
       // Events
       grid.on.rowCreated.call(grid, tr);
     },
-    fetchColumns: function() {
+    fetchColumns: function () {
       const grid = this;
 
       const params = {
@@ -788,7 +788,7 @@
 
       grid.service.getColumns.call(grid, params);
     },
-    fetchRowData: function() {
+    fetchRowData: function () {
       const grid = this;
 
       const params = {
@@ -805,7 +805,7 @@
     },
     on: {
       // Note: creating order of parameter: parent -> child, e.g. grid, tbody, row, td, self/sender
-      creating: function() {
+      creating: function () {
         const grid = this;
 
         // Do default behavior first
@@ -816,7 +816,7 @@
           grid.events.creating.call(grid);
         }
       },
-      created: function() {
+      created: function () {
         const grid = this;
 
         grid.initialization = false;
@@ -860,7 +860,7 @@
           grid.events.created.call(grid);
         }
       },
-      sorted: function(sender, imgSort, event) {
+      sorted: function (sender, imgSort, event) {
         const grid = this;
 
         // Do default behavior first
@@ -914,7 +914,7 @@
           grid.events.sorted.call(grid, sender, event);
         }
       },
-      columnCreated: function(sender) {
+      columnCreated: function (sender) {
         const grid = this;
 
         // Do default behavior first
@@ -924,7 +924,7 @@
           grid.events.columnCreated.call(grid, sender);
         }
       },
-      rowCreated: function(sender) {
+      rowCreated: function (sender) {
         const grid = this;
 
         // Do default behavior first
@@ -944,7 +944,7 @@
           tdToggle.classList.add("toggle-content");
           tdToggle.setAttribute(
             "colSpan",
-            grid.columns.filter(function(column) {
+            grid.columns.filter(function (column) {
               return !column.hideField;
             }, []).length
           );
@@ -972,7 +972,7 @@
           if (
             selectedKeys.length &&
             selectedKeys.indexOf(sender.dataset[grid.options.primaryKeyName]) >
-              -1
+            -1
           ) {
             checkbox.click();
           } else if (!customField.hideColumn && customField.autoCheck) {
@@ -985,7 +985,7 @@
           grid.events.rowCreated.call(grid, sender);
         }
       },
-      rowToggleCreated: function(parentRow, sender) {
+      rowToggleCreated: function (parentRow, sender) {
         const grid = this;
         const customField = grid.utility.getCustomField.call(grid, "toggle");
 
@@ -1001,7 +1001,7 @@
           grid.events.rowToggleCreated.call(grid, parentRow, sender);
         }
       },
-      checkAll: function(sender, event) {
+      checkAll: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1026,7 +1026,7 @@
                 )
               );
 
-              checkboxes.forEach(function(checkbox) {
+              checkboxes.forEach(function (checkbox) {
                 grid.on.check.call(grid, checkbox.parent("tr"), sender, event);
               });
 
@@ -1044,7 +1044,7 @@
             );
 
             // Update checked attribute only
-            checkboxes.forEach(function(checkbox) {
+            checkboxes.forEach(function (checkbox) {
               checkbox.checked = false;
             });
 
@@ -1061,7 +1061,7 @@
             grid.table.tBodies[0].querySelectorAll("td input[type=checkbox]")
           );
 
-          checkboxes.forEach(function(checkbox) {
+          checkboxes.forEach(function (checkbox) {
             grid.on.check.call(grid, checkbox.parent("tr"), sender, event);
           });
 
@@ -1072,7 +1072,7 @@
           }
         }
       },
-      check: function(row, sender, event) {
+      check: function (row, sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1107,7 +1107,7 @@
             if (checkboxes.length > 0) {
               let hasUnchecked = false;
 
-              checkboxes.forEach(function(checkbox) {
+              checkboxes.forEach(function (checkbox) {
                 if (!checkbox.checked) {
                   hasUnchecked = true;
                   return false;
@@ -1145,7 +1145,7 @@
 
         event.stopPropagation();
       },
-      toggleAll: function(sender, event) {
+      toggleAll: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1161,7 +1161,7 @@
           sender.src = grid.options.assetsURL.toggleExpand;
         }
 
-        imgToggles.forEach(function(imgToggle, index) {
+        imgToggles.forEach(function (imgToggle, index) {
           imgToggles.toggled = !imgToggles.toggled;
           imgToggle.click();
         });
@@ -1173,7 +1173,7 @@
 
         event.stopPropagation();
       },
-      toggle: function(row, sender, event) {
+      toggle: function (row, sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1205,7 +1205,7 @@
 
         event.stopPropagation();
       },
-      selectedIndexChanged: function(sender, event) {
+      selectedIndexChanged: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1225,7 +1225,7 @@
           grid.events.selectedIndexChanged.call(grid, sender, event);
         }
       },
-      pageIndexChange: function(sender, event) {
+      pageIndexChange: function (sender, event) {
         const grid = this;
 
         // Before paging
@@ -1239,7 +1239,7 @@
         // After paging
         grid.on.pageIndexChanged.call(grid, sender, event);
       },
-      pageIndexChanging: function(sender, event) {
+      pageIndexChanging: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1268,7 +1268,7 @@
           grid.events.pageIndexChanging.call(grid, sender, event);
         }
       },
-      pageIndexChanged: function(sender, event) {
+      pageIndexChanged: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
@@ -1281,7 +1281,7 @@
       }
     },
     utility: {
-      parseValue: function(value, type) {
+      parseValue: function (value, type) {
         /// <summary>Formats the data type. Note: parsing is done in web service row data.</summary>
         /// <returns type="Object">Returns the parsed data.</returns>
 
@@ -1298,12 +1298,12 @@
 
         return newValue;
       },
-      hasCustomField: function(name) {
+      hasCustomField: function (name) {
         /// <summary>Checks the custom field name object property.</summary>
         /// <returns type="Object">Returns true if custom field exists.</returns>
 
         const grid = this;
-        const customFields = grid.columns.filter(function(column) {
+        const customFields = grid.columns.filter(function (column) {
           return column.hasOwnProperty("type");
         }, []);
         let hasCustomField = false;
@@ -1317,18 +1317,18 @@
 
         return hasCustomField;
       },
-      getCustomFields: function() {
+      getCustomFields: function () {
         /// <summary>Gets the custom field name object property.</summary>
         /// <returns type="Object">Returns the custom field.</returns>
 
         const grid = this;
-        const customFields = grid.columns.filter(function(column) {
+        const customFields = grid.columns.filter(function (column) {
           return column.hasOwnProperty("type");
         });
 
         return customFields;
       },
-      getCustomField: function(name) {
+      getCustomField: function (name) {
         /// <summary>Gets the custom field name object property.</summary>
         /// <returns type="Object">Returns the custom field.</returns>
 
@@ -1346,7 +1346,7 @@
 
         return customField;
       },
-      getServiceURL: function() {
+      getServiceURL: function () {
         /// <summary>Gets the constructed web service URL.</summary>
         /// <returns type="Object">Returns an object containing the URL.</returns>
 
@@ -1362,7 +1362,7 @@
       }
     },
     service: {
-      getColumns: function() {
+      getColumns: function () {
         /// <summary>Fetches the row columns from the web service.</summary>
 
         const grid = this;
@@ -1373,7 +1373,7 @@
           url: grid.utility.getServiceURL.call(grid).columns,
           data: params,
           method: "POST",
-          success: function(data) {
+          success: function (data) {
             const response = JSON.parse(data);
 
             if (response.success) {
@@ -1401,7 +1401,7 @@
                 .hideLoading();
             }
           },
-          error: function(error) {
+          error: function (error) {
             // Create table caption "Something went wrong."
             grid
               .showCaption("Something went wrong.")
@@ -1412,7 +1412,7 @@
           }
         });
       },
-      getRowData: function() {
+      getRowData: function () {
         /// <summary>Fetches the row data from the web service.</summary>
 
         const grid = this;
@@ -1423,7 +1423,7 @@
           url: grid.utility.getServiceURL.call(grid).rowData,
           data: params,
           method: "POST",
-          success: function(data) {
+          success: function (data) {
             const response = JSON.parse(data);
 
             if (response.success) {
@@ -1453,7 +1453,7 @@
               grid.on.created.call(grid);
             }
           },
-          error: function(error) {
+          error: function (error) {
             // Create table caption "Something went wrong."
             grid.showCaption("Something went wrong.").hideLoading();
 
@@ -1461,7 +1461,7 @@
           }
         });
       },
-      getRowKeys: function() {
+      getRowKeys: function () {
         /// <summary>Fetches the row keys from the web service. Used this to get all keys if allowPaging is true.</summary>
 
         const grid = this;
@@ -1472,7 +1472,7 @@
           url: grid.utility.getServiceURL.call(grid).rowKeys,
           data: params,
           method: "POST",
-          success: function(data) {
+          success: function (data) {
             const response = JSON.parse(data);
 
             if (response.success) {
@@ -1487,7 +1487,7 @@
               const selectedKeys = response.result;
 
               // Update checked attribute only
-              checkboxes.forEach(function(checkbox) {
+              checkboxes.forEach(function (checkbox) {
                 checkbox.checked = true;
               });
 
@@ -1501,14 +1501,14 @@
               }
             }
           },
-          error: function(error) {
+          error: function (error) {
             console.error(error);
           }
         });
       }
     },
     row: {
-      getData: function() {
+      getData: function () {
         /// <summary>Gets the dataset `DATA`.</summary>
         /// <returns type="Object">Returns the dataset `DATA` in JSON format.</returns>
 
@@ -1519,7 +1519,7 @@
 
         return data;
       },
-      getSelectedKeys: function() {
+      getSelectedKeys: function () {
         /// <summary>Gets the selected dataset `SELECTED_KEYS`.</summary>
         /// <returns type="Array">Returns the dataset `SELECTED_KEYS` in JSON format.</returns>
 
@@ -1534,20 +1534,20 @@
 
         return selectedKeys;
       },
-      getAllKeys: function() {
+      getAllKeys: function () {
         /// <summary>Gets all the dataset `SELECTED_KEYS`.</summary>
         /// <returns type="Array">Returns the dataset `SELECTED_KEYS` in JSON format.</returns>
 
         const grid = this;
         const rows = Array.from(grid.table.tBodies[0].rows);
 
-        return rows.reduce(function(rowKeys, row) {
+        return rows.reduce(function (rowKeys, row) {
           rowKeys.push(row.dataset[grid.options.primaryKeyName]);
 
           return rowKeys;
         }, []);
       },
-      hasSelectedKeys: function() {
+      hasSelectedKeys: function () {
         /// <summary>Checks if there's a selected key based on dataset `SELECTED_KEYS`.</summary>
         /// <returns type="Boolean">Returns `true` if there's a selected key.</returns>
 
