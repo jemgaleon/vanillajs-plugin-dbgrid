@@ -69,7 +69,9 @@
     grid.initialization = false;
 
     // Initialization
-    grid.init().create();
+    grid
+      .init()
+      .create();
   };
 
   // Public Methods
