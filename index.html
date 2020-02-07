@@ -1,21 +1,241 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Grid Plugin</title>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="./src/styles/styles.css">
-    <link rel="stylesheet" href="./src/styles/dbgrid.css">
-  </head>
 
-  <body>
-    <div id="app">
-      <div id="grdWorksheet">
-        <!-- insert table here -->
-      </div>
-    </div>
-    <script src="./src/scripts/extension.js"></script>
-    <script src="./src/scripts/polyfill.js"></script>
-    <script src="./src/scripts/dbgrid.js"></script>
-    <script src="./src/scripts/index.js"></script>
-  </body>
+<head>
+  <title>Grid Plugin</title>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    #app {
+      margin: 10px;
+    }
+
+    .toggleWrapper {
+      margin: 10px 0 !important;
+    }
+  </style>
+  <link rel="stylesheet" href="./src/styles/dbgrid.css">
+</head>
+
+<body>
+  <div id="app">
+    <div id="grdClient"></div>
+    <br />
+    <div id="grdCustom"></div>
+    <button id="btnAddItem">Add Item to grdCustom</button>
+    <br />
+    <div id="grdConfig"></div>
+    <br />
+    <div id="grdCeption"></div>
+    <br />
+  </div>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="./src/scripts/extension.js"></script>
+  <script src="./src/scripts/polyfill.js"></script>
+  <script src="./src/scripts/dbgrid.js"></script>
+  <script>
+    let exposeMe = null;
+    let grdClient = null;
+    let grdCustom = null;
+    let grdConfig = null;
+    let grdCeption = null;
+
+    (function () {
+      // Instance DBGrid Obj
+      grdClient = new DBGrid({
+        wrapper: "#grdClient",
+        dataKeyNames: "ID",
+        columns: [
+          { type: "checkbox", hideColumn: false, autoCheck: false },
+          { fieldName: "ID", fieldHeader: "Key", fieldWidth: 100, displayOrder: 1, hideField: true, isDataKeyField: true },
+          { fieldName: "SEQUENCE", fieldHeader: "Sequence", fieldWidth: 90, displayOrder: 2, hideField: false, isDataKeyField: false },
+          { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldWidth: 120, displayOrder: 3, hideField: false, isDataKeyField: false }
+        ],
+        rowData: [
+          [1, 1, "Item A"],
+          [2, 2, "Item B"],
+          [3, 3, "Item C"],
+          [4, 4, "Item D"],
+          [5, 5, "Item E"],
+          [6, 5, "Item E"]
+        ]
+      });
+
+      grdCustom = new DBGrid({
+        wrapper: "#grdCustom",
+        dataKeyNames: "KEY",
+        emptyDataText: "Click button to add item.",
+        columns: [
+          { type: "checkbox", hideColumn: false, autoCheck: true },
+          //{ type: "toggle", hideColumn: true, autoOpen: true },
+          { fieldName: "KEY", fieldHeader: "Key", fieldWidth: 100, displayOrder: 1, hideField: true, isDataKeyField: true },
+          { fieldName: "ITEM_NUMBER", fieldHeader: "Item #", fieldWidth: 100, displayOrder: 2, hideField: false, isDataKeyField: false },
+          { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldWidth: 100, displayOrder: 3, hideField: false, isDataKeyField: false },
+        ],
+        rowData: []
+      });
+
+      grdConfig = new DBGrid({
+        wrapper: "#grdConfig",
+        gridName: "DBGRIDJS_ITEMS",
+        dataKeyNames: "EVIDENCE_CONTROL_NUMBER",
+        columns: [
+          { type: "checkbox", hideColumn: false, autoCheck: true }
+        ],
+        events: {
+          toggle: function (row, contentRow, sender, event) {
+            const td = contentRow.querySelector("td");
+
+            td.appendChild(document.createTextNode("toggle-row"));
+          }
+        }
+      });
+
+      grdCeption = new DBGrid({
+        wrapper: "#grdCeption",
+        gridName: "DBGRIDJS_ASSIGNMENT",
+        dataKeyNames: "ID,CASE_NUM,SECTION,PRIORITY",
+        hiddenFields: "0,1,2", // field index
+        pageSize: 5,
+        cancelSelectOnClick: true,
+        columns: [
+          { type: "toggle", hideColumn: true, autoOpen: false }
+        ],
+        events: {
+          toggle: function (row, contentRow, sender, event) {
+            const grid = this;
+
+            const td = contentRow.querySelector("td");
+            const div = td.querySelector("div")
+              ? td.querySelector("div")
+              : document.createElement("div");
+            let dbgridChild = div.querySelector("table");
+
+            // Create child grid
+            if (!dbgridChild) {
+              dbgridChild = new DBGrid({
+                wrapper: div,
+                gridName: "DBGRIDJS_WORK",
+                dataKeyNames: "ID",
+                hiddenFields: "ID",
+                additionalCriteria: "SECTION = '" + row.dataset["SECTION"] + "'",
+                cancelSelectOnClick: true,
+                pageSize: 5,
+                columns: [
+                  { type: "checkbox" }
+                ],
+                events: {
+                  columnCreated: function (sender) {
+                    const parentGrid = grdCeption;
+                    const dataHolder = parentGrid.table.tHead.children[0];
+                    const row = sender.parent(".toggle-row");
+                    const dataFromParent = dataHolder.dataset["DATA"]
+                      ? JSON.parse(dataHolder.dataset["DATA"])
+                      : [];
+
+                    dataFromParent.forEach(function (data) {
+                      const primaryKeyValue = data.primaryKey;
+                      const selectedKeys = data.selectedKeys;
+
+                      const rowPrimaryKey = row.dataset[parentGrid.options.primaryKeyName];
+
+                      if (rowPrimaryKey === primaryKeyValue) {
+
+                        const table = row.querySelector(".tableception");
+                        const checkboxAll = table.tHead.querySelector("th input[type=checkbox]");
+
+                        // Save to checkbox header
+                        checkboxAll.dataset["SELECTED_KEYS"] = selectedKeys;
+                      }
+                    });
+                  },
+                  checkAll: function (sender, event) {
+                    const grid = this;
+                    const parentGrid = grdCeption;
+                    const toggleRow = sender.parent("tr.toggle-row");
+
+                    const dataHolder = parentGrid.table.tHead.children[0];
+                    const data = dataHolder.dataset["DATA"]
+                      ? JSON.parse(dataHolder.dataset["DATA"])
+                      : [];
+                    const selectedKeys = grid.row.getSelectedKeys.call(grid);
+                    const primaryKeyValue = toggleRow.dataset[parentGrid.options.primaryKeyName];
+                    const rowDataFoundIndex = data.findIndex(function (rowData) {
+                      return rowData.primaryKey === primaryKeyValue;
+                    });
+
+                    if (rowDataFoundIndex > -1) {
+                      data.splice(rowDataFoundIndex, 1);
+                    }
+
+                    if (selectedKeys.length) {
+                      data.push({
+                        primaryKey: primaryKeyValue,
+                        selectedKeys: selectedKeys
+                      });
+                    }
+
+                    dataHolder.dataset["DATA"] = JSON.stringify(data);
+                  },
+                  check: function (checkboxAll, row, sender, event) {
+                    const grid = this;
+                    const parentGrid = grdCeption;
+                    const toggleRow = checkboxAll.parent("tr.toggle-row");
+
+                    const dataHolder = parentGrid.table.tHead.children[0];
+                    const data = dataHolder.dataset["DATA"]
+                      ? JSON.parse(dataHolder.dataset["DATA"])
+                      : [];
+                    const selectedKeys = grid.row.getSelectedKeys.call(grid);
+                    const primaryKeyValue = toggleRow.dataset[parentGrid.options.primaryKeyName];
+                    const rowDataFoundIndex = data.findIndex(function (rowData) {
+                      return rowData.primaryKey === primaryKeyValue;
+                    });
+
+                    if (rowDataFoundIndex > -1) {
+                      data.splice(rowDataFoundIndex, 1);
+                    }
+
+                    if (selectedKeys.length) {
+                      data.push({
+                        primaryKey: primaryKeyValue,
+                        selectedKeys: selectedKeys
+                      });
+                    }
+
+                    dataHolder.dataset["DATA"] = JSON.stringify(data);
+                  }
+                }
+              });
+
+              dbgridChild.table.classList.add("tableception"); // header index issue fix
+              dbgridChild.table.width = "100%";
+              div.appendChild(dbgridChild.table);
+              div.classList.add("toggleWrapper");
+              div.classList.add("dbgridjs"); // manually add this for child grids
+              td.appendChild(div);
+            }
+          },
+        }
+      });
+
+      btnAddItem.addEventListener("click", addItem);
+
+      function addItem() {
+        let cell = [-1, 1, "Item"];
+
+        cell[0] = grdCustom.rowData.length + 1;
+
+        grdCustom.addRow(cell);
+      }
+    }());
+  </script>
+</body>
+
 </html>
