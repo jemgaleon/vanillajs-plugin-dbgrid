@@ -212,7 +212,7 @@
       // Custom data
       if (!grid.options.gridName) {
         grid.columns = grid.options.columns;
-        grid.rowData = grid.options.rowData;
+        grid.rowData = Array.from(grid.options.rowData);
         grid.totalRecords = grid.rowData.length;
 
         grid
