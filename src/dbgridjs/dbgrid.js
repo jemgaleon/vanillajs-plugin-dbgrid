@@ -39,11 +39,11 @@
                 rowKeys: "/GetRowKeys"
             },
             assetsURL: {
-                sortAsc: "./src/assets/sortasc.bmp",
-                sortDesc: "./src/assets/sortdesc.bmp",
-                toggleCollapse: "./src/assets/toggle_collapse.png",
-                toggleExpand: "./src/assets/toggle_expand.png",
-                loader: "./src/assets/ajax-loader.gif"
+                sortAsc: "./src/dbgridjs/assets/sortasc.bmp",
+                sortDesc: "./src/dbgridjs/assets/sortdesc.bmp",
+                toggleCollapse: "./src/dbgridjs/assets/toggle_collapse.png",
+                toggleExpand: "./src/dbgridjs/assets/toggle_expand.png",
+                loader: "./src/dbgridjs/assets/ajax-loader.gif"
             },
             events: {
             }
