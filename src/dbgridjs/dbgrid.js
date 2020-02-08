@@ -156,17 +156,21 @@
         grid.totalRecords = grid.rowData.length;
 
         grid
+          .removeTableHead()
           .createTableHead()
+          .removeTableBody()
           .createTableBody()
           .setWrapper();
 
         if (grid.rowData.length > 0) {
+          grid
+            .removeTableBody()
+            .createTableBody();
+
           if (grid.options.allowPaging) {
             grid
-              .createTableBody()
+              .removeTableFoot()
               .createTableFoot();
-          } else {
-            grid.createTableBody();
           }
         } else {
           grid.showCaption();
@@ -206,9 +210,16 @@
     createTableHead: function () {
       const grid = this;
 
-      grid.table.deleteTHead();
       grid.table.tHead = document.createElement("thead");
+      const tr = grid.createTableHeadRow();
 
+      // Events
+      grid.on.columnCreated.call(grid, tr);
+
+      return grid;
+    },
+    createTableHeadRow: function () {
+      const grid = this;
       const rowData = grid.columns.map(function (column) {
         let data = null;
 
@@ -244,22 +255,21 @@
 
       grid.table.tHead.appendChild(tr);
 
-      // Events
-      grid.on.columnCreated.call(grid, tr);
-
-      return grid;
+      return tr;
     },
     createTableBody: function () {
       const grid = this;
-
-      if (grid.table.tBodies.length) {
-        grid.table.removeChild(grid.table.tBodies[0]);
-      }
-
+      
       grid.table.appendChild(document.createElement("tbody"));
+      grid.createTableBodyRows();
       //Todo: fix IE display: sticky alternative
       //grid.setWrapper();
 
+      return grid;
+    },
+    createTableBodyRows() {
+      const grid = this;
+      
       for (let i = 0; i < grid.rowData.length; i++) {
         const rowData = grid.rowData[i];
 
@@ -273,7 +283,6 @@
 
       if (!grid.totalRecords) return;
 
-      grid.table.deleteTFoot();
       grid.table.tFoot = document.createElement("tfoot");
 
       const rowData = [
@@ -745,11 +754,12 @@
           data = {
             cellValue: cell,
             width: grid.columns[index].fieldWidth,
-            hidden: grid.columns[index].hideField,
-            dataKeyName: grid.columns[index].isDataKeyField
-              ? grid.columns[index].fieldName
-              : ""
+            hidden: grid.columns[index].hideField
           };
+
+          if (grid.columns[index].isDataKeyField) {
+            data["dataKeyName"] = grid.columns[index].fieldName;
+          }
         }
 
         return data;
@@ -930,6 +940,7 @@
           grid
             .hideCaption()
             .showTableHeader()
+            .removeTableFoot()
             .createTableFoot();
         }
 
@@ -1378,6 +1389,7 @@
 
               // Create table head
               grid
+                .removeTableHead()
                 .createTableHead()
                 .setWrapper();
 
@@ -1426,14 +1438,15 @@
                 // Create table caption "No records found."
                 grid.showCaption();
               } else {
+                // Create table body and foot (pager)
+                grid
+                  .removeTableBody()
+                  .createTableBody()
+
                 if (grid.options.allowPaging) {
-                  // Create table body and foot (pager)
-                  grid
-                    .createTableBody()
-                    .createTableFoot();
-                } else {
-                  // Create table body
-                  grid.createTableBody();
+                    grid
+                      .removeTableFoot()
+                      .createTableFoot();
                 }
               }
             } else {
