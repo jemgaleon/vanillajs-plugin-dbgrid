@@ -13,11 +13,11 @@
     <div id="grdClient">
     </div>
 
-    <div id="grdCustom">
-    </div>
     <button id="btnAddItem">
       Add Item to grdCustom
     </button>
+    <div id="grdCustom">
+    </div>
 
     <div id="grdConfig">
     </div>
@@ -62,6 +62,8 @@
           wrapper: "#grdCustom",
           dataKeyNames: "KEY",
           emptyDataText: "Click button to add item.",
+          width: 220,
+          //cancelSelectOnClick: true,
           columns: [
             { type: "checkbox", hideColumn: false, autoCheck: true },
             //{ type: "toggle", hideColumn: true, autoOpen: true },
@@ -222,8 +224,9 @@
           let cell = [-1, 1, "Item"];
 
           cell[0] = grdCustom.rowData.length + 1;
+          cell[1] = grdCustom.rowData.length + 1;
 
-          grdCustom.addRow(cell);
+          grdCustom.addRow(cell);//.select();
         }
       }());
   </script>
