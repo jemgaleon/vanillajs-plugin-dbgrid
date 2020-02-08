@@ -163,10 +163,6 @@
           .setWrapper();
 
         if (grid.rowData.length > 0) {
-          grid
-            .removeTableBody()
-            .createTableBody();
-
           if (grid.options.allowPaging) {
             grid
               .removeTableFoot()
