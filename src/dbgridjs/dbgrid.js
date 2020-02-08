@@ -15,7 +15,7 @@
       description: "",
       panelName: "",
       width: 700,
-      height: 300,
+      height: 350,
       allowSorting: true,
       allowPaging: true,
       pageSize: 10,
@@ -64,8 +64,8 @@
     grid.rowData = [];
     grid.sortList = [];
     grid.totalRecords = 0;
-    grid.selectedPageIndex = 1;
-    grid.selectedIndex = -1; // Todo: not yet implemented
+    grid.selectedPageIndex = 1; // non-zero based index
+    grid.selectedIndex = 0; // non-zero based index
     grid.initialization = false;
 
     // Initialization
@@ -149,8 +149,14 @@
     createContent: function () {
       const grid = this;
 
+      // DBGridConfig data
+      if (grid.options.gridName) {
+        grid
+          .setWrapper()
+          .fetchColumns();
+      }
       // Custom data
-      if (!grid.options.gridName) {
+      else {
         grid.columns = grid.options.columns;
         grid.rowData = Array.from(grid.options.rowData);
         grid.totalRecords = grid.rowData.length;
@@ -176,12 +182,6 @@
           grid.success = true;
           grid.on.created.call(grid);
         }
-      }
-      // DBGridConfig data
-      else {
-        grid
-          .setWrapper()
-          .fetchColumns();
       }
 
       return grid;
@@ -387,7 +387,8 @@
       // Events
       if (props.isBody) {
         if (!grid.options.cancelSelectOnClick) {
-          tr.addEventListener("click", grid.on.selectedIndexChanged.bind(grid, tr));
+          tr.addEventListener("click", grid.on.selectedIndexChange.bind(grid, tr));
+          tr.select = grid.on.selectedIndexChange.bind(grid, tr);
         }
       }
 
@@ -458,7 +459,7 @@
       const th = document.createElement("th");
       const pageGroup = Math.ceil(props.selectedPageIndex / props.pagerCount);
       const totalPages = Math.ceil(props.totalRecords / props.pageSize);
-
+      
       // Add previous paging
       if (pageGroup > 1) {
         const a = document.createElement("a");
@@ -483,11 +484,13 @@
 
         // Add class
         if (props.selectedPageIndex === i) {
-          a.classList.add("selected");
-        } else {
-          // Add event
-          a.addEventListener("click", grid.on.pageIndexChange.bind(grid, a));
+          // Todo: Move this pageIndexChange event
+          a.classList.add("selected")
+          a.setAttribute("disabled", true);
         }
+
+        // Add event
+        a.addEventListener("click", grid.on.pageIndexChange.bind(grid, a));
 
         a.appendChild(document.createTextNode(i));
 
@@ -656,6 +659,24 @@
 
       return grid;
     },
+    updateTableBodyRows: function() {
+      const grid = this;
+      const rows = grid.table.tBodies[0].querySelectorAll("tr");
+      const rowIndex = grid.selectedIndex || 1;
+      const pageIndex = Math.ceil(rowIndex / grid.options.pageSize);
+
+      rows.forEach(function(row) {
+        const included = Math.ceil(row.rowIndex / grid.options.pageSize) === pageIndex;
+
+        if (!included) {
+          row.classList.add("hidden");
+        } else {
+          row.classList.remove("hidden");
+        }
+      });
+
+      return grid;
+    },
     showTable: function() {
       const grid = this;
 
@@ -767,6 +788,7 @@
         rowData: rowData
       });
 
+      // Todo: find where to insert for sort, for now add at the bottom
       grid.table.tBodies[0].appendChild(tr);
 
       // Add to rowData for custom data
@@ -777,6 +799,8 @@
 
       // Events
       grid.on.rowCreated.call(grid, tr);
+
+      return tr;
     },
     fetchColumns: function () {
       const grid = this;
@@ -930,16 +954,29 @@
         const grid = this;
 
         // Do default behavior first
-        // If uses custom data
+        // If custom data
         if (!grid.options.gridName) {
           // Update total records
           grid.totalRecords = grid.rowData.length;
-
+          
+          // Update header
           grid
             .hideCaption()
             .showTableHeader()
-            .removeTableFoot()
-            .createTableFoot();
+
+          if (grid.options.allowPaging) {
+            // Update selected index
+            if (!grid.options.cancelSelectOnClick) {
+              sender.select();
+              grid.selectedPageIndex = Math.ceil(sender.rowIndex / grid.options.pageSize);
+            }
+
+            // Update body and footer
+            grid
+              .updateTableBodyRows()
+              .removeTableFoot()
+              .createTableFoot();
+          }
         }
 
         // Toggle: create tr.toggle-row here
@@ -1207,20 +1244,43 @@
 
         event.stopPropagation();
       },
+      selectedIndexChange: function (sender, event) {
+        const grid = this;
+
+        // Before row select
+        grid.on.selectedIndexChanging.call(grid, sender, event);
+
+        grid.selectedIndex = sender.rowIndex;
+
+        const row = grid.table.tBodies[0].querySelector("tr.selected");
+
+        if (row) {
+          row.classList.remove("selected");
+        }
+
+        sender.classList.add("selected");
+        
+        // After row select
+        grid.on.selectedIndexChanged.call(grid, sender, event);
+      },
+      selectedIndexChanging: function (sender, event) {
+        const grid = this;
+
+        // Do default behavior first
+
+        // Call user-defined event
+        if (grid.events
+          && typeof grid.events.selectedIndexChanging === "function") {
+          grid.events.selectedIndexChanging.call(grid, sender, event);
+        }
+      },
       selectedIndexChanged: function (sender, event) {
         const grid = this;
 
         // Do default behavior first
-        const row = grid.table.tBodies[0].querySelectorAll("tr.selected");
-
-        if (row.length) {
-          row[0].classList.remove("selected");
-        }
-        sender.classList.add("selected");
 
         // Call user-defined event
-        if (!grid.options.cancelSelectOnClick
-          && grid.events
+        if (grid.events
           && typeof grid.events.selectedIndexChanged === "function") {
           grid.events.selectedIndexChanged.call(grid, sender, event);
         }
@@ -1231,9 +1291,36 @@
         // Before paging
         grid.on.pageIndexChanging.call(grid, sender, event);
 
+        // Upadate selected pager
+        const selectedPager = grid.table.tFoot.querySelector("th a.selected");
+        
+        if (selectedPager) {
+          selectedPager.classList.remove("selected");
+          selectedPager.removeAttribute("disabled");
+        }
+
+        sender.classList.add("selected");
+        sender.setAttribute("disabled", true);
+
         // Update table
         if (grid.options.gridName) {
+          if (!grid.options.cancelSelectOnClick) {
+            grid.selectedIndex = 1; // always return to first
+          }
+
           grid.fetchRowData();
+        } else {
+          if (!grid.options.cancelSelectOnClick) {
+            let selectedIndex = 1;
+
+            if (grid.selectedPageIndex > 1) {
+              selectedIndex = ((grid.selectedPageIndex - 1) * grid.options.pageSize) + 1;
+            }
+
+            grid.row.selectByIndex.call(grid, selectedIndex);
+          }
+          
+          grid.updateTableBodyRows();
         }
 
         // After paging
@@ -1268,7 +1355,6 @@
         const grid = this;
 
         // Do default behavior first
-        sender.pageIndex = grid.selectedPageIndex;
 
         // Call user-defined event
         if (grid.events
@@ -1567,6 +1653,52 @@
           : [];
 
         return selectedKeys.length > 0;
+      },
+      getAll: function() {
+        const grid = this;
+        const rows = grid.table.tBodies[0].querySelectorAll("tr");
+
+        return rows;
+      },
+      select: function() {
+        const grid = this;
+        const row = arguments[0];
+
+        row.click();
+
+        return grid;
+      },
+      selectByKey: function() {
+        const grid = this;
+        const key = arguments[0];
+        const rows = grid.row.getAll.call(grid);
+
+        rows.forEach(function(row) {
+          const rowKey = row.dataset[grid.options.primaryKeyName];
+          
+          if (key === rowKey) {
+            row.click();
+            return false;
+          }
+        });
+
+        return grid;
+      },
+      selectByIndex: function() {
+        const grid = this;
+        const index = arguments[0];
+        const rows = grid.row.getAll.call(grid);
+
+        rows.forEach(function(row) {
+          const rowIndex = row.rowIndex;
+
+          if (index === rowIndex) {
+            row.click();
+            return false;
+          }
+        });
+
+        return grid;
       }
     }
   };
