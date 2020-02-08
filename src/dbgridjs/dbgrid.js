@@ -101,7 +101,7 @@
       grid
         .removeTable()
         .createTable()
-        .hideTable()
+        .hideTable() // show table after hide loader
         .attachToWrapper()
         .createContent();
 
@@ -183,7 +183,9 @@
       }
       // DBGridConfig data
       else {
-        grid.fetchColumns();
+        grid
+          .setWrapper()
+          .fetchColumns();
       }
 
       return grid;
@@ -1399,7 +1401,6 @@
               // Create table caption "Something went wrong."
               grid
                 .showCaption("Something went wrong.")
-                .setWrapper()
                 .showTable()
                 .hideLoading();
             }
@@ -1408,7 +1409,6 @@
             // Create table caption "Something went wrong."
             grid
               .showCaption("Something went wrong.")
-              .setWrapper()
               .showTable()
               .hideLoading();
 
