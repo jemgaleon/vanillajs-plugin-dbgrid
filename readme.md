@@ -4,6 +4,10 @@ A simple JavaScript implementation of the .NET GridView control (and some of our
 
 Todo(s):
 - [ ] Support for client-side data rendering
+ - update hide/show rows depending on paging settings
+ - paging: go to recently add row
+ - scroll: scrollTo
+ - sort: new rows, update rowData
 - [ ] Programmatically set grid.options.dataKeyNames for client-side 
 - [x] Fetch data web api (paging and sorting feature)
 - [x] AllowSorting
