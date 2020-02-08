@@ -99,7 +99,9 @@
       grid.on.creating.call(grid);
 
       grid
+        .removeTable()
         .createTable()
+        .hideTable()
         .attachToWrapper()
         .createContent();
 
@@ -107,14 +109,6 @@
     },
     attachToWrapper: function () {
       const grid = this;
-
-      if (grid.wrapper.childNodes.length > 0) {
-        const table = grid.wrapper.querySelector("table");
-
-        if (table != null) {
-          grid.wrapper.removeChild(table);
-        }
-      }
 
       grid.wrapper.appendChild(grid.table);
 
@@ -148,58 +142,6 @@
         //}
 
         grid.wrapper.classList.add("dbgridjs");
-      }
-
-      return grid;
-    },
-    showLoading: function () {
-      const grid = this;
-      const img = document.createElement("img");
-
-      img.src = grid.options.assetsURL.loader;
-      img.alt = "Loading...";
-      img.classList.add("loader");
-
-      grid.loader = img;
-      grid.wrapper.appendChild(grid.loader);
-
-      return grid;
-    },
-    hideLoading: function () {
-      const grid = this;
-
-      grid.table.classList.remove("hidden");
-
-      if (
-        grid.wrapper.childNodes.length > 0 &&
-        grid.wrapper.contains(grid.loader)
-      ) {
-        grid.wrapper.removeChild(grid.loader);
-      }
-
-      return grid;
-    },
-    showCaption: function () {
-      const grid = this;
-      const caption = arguments[0];
-
-      grid
-        .createTableCaption(caption)
-        .removeTableHead()
-        .removeTableBody()
-        .removeTableFoot();
-
-      return grid;
-    },
-    hideCaption: function () {
-      const grid = this;
-
-      grid.removeTableCaption();
-      grid.table.classList.remove("empty");
-
-      // Show thead for custom data
-      if (!grid.options.gridName) {
-        grid.table.tHead.classList.remove("hidden");
       }
 
       return grid;
@@ -247,7 +189,6 @@
       const table = document.createElement("table");
 
       grid.table = table;
-      grid.table.classList.add("hidden"); // initially hide
 
       return grid;
     },
@@ -655,6 +596,19 @@
 
       return control;
     },
+    removeTable: function () {
+      const grid = this;
+
+      if (grid.wrapper.childNodes.length) {
+        const table = grid.wrapper.querySelector("table");
+
+        if (table) {
+          grid.wrapper.removeChild(table);
+        }
+      }
+
+      return grid;
+    },
     removeTableCaption: function () {
       const grid = this;
 
@@ -669,7 +623,7 @@
         if (grid.options.gridName) {
           grid.table.deleteTHead();
         } else {
-          grid.table.tHead.classList.add("hidden");
+          grid.hideTableHeader();
         }
       }
 
@@ -691,6 +645,77 @@
 
       if (grid.table.tFoot) {
         grid.table.deleteTFoot();
+      }
+
+      return grid;
+    },
+    showTable: function() {
+      const grid = this;
+
+      grid.table.classList.remove("hidden");
+
+      return grid;
+    },
+    showCaption: function () {
+      const grid = this;
+      const caption = arguments[0];
+
+      grid
+        .createTableCaption(caption)
+        .removeTableHead()
+        .removeTableBody()
+        .removeTableFoot();
+
+      return grid;
+    },
+    showTableHeader: function () {
+      const grid = this;
+
+      grid.table.tHead.classList.remove("hidden");
+
+      return grid;
+    },
+    showLoading: function () {
+      const grid = this;
+      const img = document.createElement("img");
+
+      img.src = grid.options.assetsURL.loader;
+      img.alt = "Loading...";
+      img.classList.add("loader");
+
+      grid.loader = img;
+      grid.wrapper.appendChild(grid.loader);
+
+      return grid;
+    },
+    hideTable: function () {
+      const grid = this;
+
+      grid.table.classList.add("hidden");
+
+      return grid;
+    },
+    hideCaption: function () {
+      const grid = this;
+
+      grid.removeTableCaption();
+      grid.table.classList.remove("empty");
+
+      return grid;
+    },
+    hideTableHeader: function () {
+      const grid = this;
+
+      grid.table.tHead.classList.add("hidden");
+
+      return grid;
+    },
+    hideLoading: function () {
+      const grid = this;
+
+      if (grid.wrapper.childNodes.length
+        && grid.wrapper.contains(grid.loader)) {
+        grid.wrapper.removeChild(grid.loader);
       }
 
       return grid;
@@ -793,7 +818,9 @@
         grid.initialization = false;
 
         // Do default behavior first
-        grid.hideLoading();
+        grid
+          .showTable()
+          .hideLoading();
 
         // Toggle all
         if (grid.utility.hasCustomField.call(grid, "toggle")) {
@@ -902,6 +929,7 @@
 
           grid
             .hideCaption()
+            .showTableHeader()
             .createTableFoot();
         }
 
@@ -1360,6 +1388,7 @@
               grid
                 .showCaption("Something went wrong.")
                 .setWrapper()
+                .showTable()
                 .hideLoading();
             }
           },
@@ -1368,6 +1397,7 @@
             grid
               .showCaption("Something went wrong.")
               .setWrapper()
+              .showTable()
               .hideLoading();
 
             console.error(error);
@@ -1398,14 +1428,19 @@
               } else {
                 if (grid.options.allowPaging) {
                   // Create table body and foot (pager)
-                  grid.createTableBody().createTableFoot();
+                  grid
+                    .createTableBody()
+                    .createTableFoot();
                 } else {
                   // Create table body
                   grid.createTableBody();
                 }
               }
             } else {
-              grid.showCaption("Something went wrong.").hideLoading();
+              grid
+                .showCaption("Something went wrong.")
+                .showTable()
+                .hideLoading();
             }
 
             if (grid.initialization) {
@@ -1417,7 +1452,10 @@
           },
           error: function (error) {
             // Create table caption "Something went wrong."
-            grid.showCaption("Something went wrong.").hideLoading();
+            grid
+              .showCaption("Something went wrong.")
+              .showTable()
+              .hideLoading();
 
             console.error(error);
           }
