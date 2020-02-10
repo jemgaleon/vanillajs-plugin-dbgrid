@@ -1744,6 +1744,37 @@
 
         return grid;
       }
+    },
+    column: {
+      sort: function (sortList) {
+        // sort = sortOrder.split(",");
+        // sort.reverse().map((sortName, currIndex) => {
+        //   const index = sortName.split(" ")[0];
+        //   const order = sortName.split(" ")[1];
+          
+        //   // asc
+        //   if (order === "ASC") {
+        //     array.sort((a, b) => {
+        //       if (typeof a[index] === "number") {
+        //         return a[index] - b[index];
+        //       } else {
+        //         return a[index].localeCompare(b[index]);
+        //       }
+        //     });
+        //   }
+
+        //   // desc
+        //   if (order === "DESC") {
+        //     array.sort((a, b) => {
+        //       if (typeof a[index] === "number") {
+        //         return b[index] - a[index];
+        //       } else {
+        //         return b[index].localeCompare(a[index]);
+        //       }
+        //     });
+        //   }
+        // });
+      }
     }
   };
 
