@@ -93,6 +93,8 @@
       // Bindings
       grid.on.creating = grid.on.creating.bind(grid);
       grid.on.created = grid.on.created.bind(grid);
+      grid.on.sort= grid.on.sort.bind(grid);
+      grid.on.sorting = grid.on.sorting.bind(grid);
       grid.on.sorted = grid.on.sorted.bind(grid);
       grid.on.rowCreated = grid.on.rowCreated.bind(grid);
       grid.on.rowToggleCreated = grid.on.rowToggleCreated.bind(grid);
@@ -452,7 +454,7 @@
         imgSort.alt = "";
 
         // Add event
-        a.addEventListener("click", grid.on.sorted.bind(grid, a, imgSort));
+        a.addEventListener("click", grid.on.sort.bind(grid, a, imgSort));
 
         textNode = document.createTextNode(props.cellValue);
         a.appendChild(textNode);
@@ -909,10 +911,12 @@
           grid.events.created.call(grid);
         }
       },
-      sorted: function (sender, imgSort, event) {
+      sort: function (sender, imgSort, event) {
         const grid = this;
 
-        // Do default behavior first
+        // Before sort
+        grid.on.sorting(sender, event);
+
         // Sort list and direction
         const sortName = sender.sortName;
         let sortDirection = sender.sortDirection;
@@ -952,6 +956,25 @@
           imgSort.src = "#";
           imgSort.alt = "";
         }
+
+        // After sort
+        grid.on.sorted(sender, event);
+      },
+      sorting: function (sender, event) {
+        const grid = this;
+
+        // Do default behavior first
+
+        // Call user-defined event
+        if (grid.events
+          && typeof grid.events.sorting === "function") {
+          grid.events.sorting.call(grid, sender, event);
+        }
+      },
+      sorted: function (sender, event) {
+        const grid = this;
+
+        // Do default behavior first
 
         // Update table
         if (grid.options.gridName) {
@@ -1316,6 +1339,22 @@
         // Before paging
         grid.on.pageIndexChanging(sender, event);
 
+        // Update selected page index
+        const value = sender.value;
+        let selectedPageIndex = Number(grid.selectedPageIndex);
+        const pageGroup = Math.ceil(selectedPageIndex / grid.options.pagerCount);
+
+        if (value === "previous") {
+          selectedPageIndex = (pageGroup - 2) * grid.options.pagerCount + 1; // add offset 1
+        } else if (value === "next") {
+          selectedPageIndex = pageGroup * grid.options.pagerCount + 1; // add offset 1
+        } else {
+          selectedPageIndex = Number(value);
+        }
+
+        grid.selectedPageIndex = selectedPageIndex;
+        sender.pageIndex = grid.selectedPageIndex;
+
         // Upadate selected pager
         const selectedPager = grid.table.tFoot.querySelector("th a.selected");
         
@@ -1355,20 +1394,6 @@
         const grid = this;
 
         // Do default behavior first
-        const value = sender.value;
-        let selectedPageIndex = Number(grid.selectedPageIndex);
-        const pageGroup = Math.ceil(selectedPageIndex / grid.options.pagerCount);
-
-        if (value === "previous") {
-          selectedPageIndex = (pageGroup - 2) * grid.options.pagerCount + 1; // add offset 1
-        } else if (value === "next") {
-          selectedPageIndex = pageGroup * grid.options.pagerCount + 1; // add offset 1
-        } else {
-          selectedPageIndex = Number(value);
-        }
-
-        grid.selectedPageIndex = selectedPageIndex;
-        sender.pageIndex = grid.selectedPageIndex;
 
         // Call user-defined event
         if (grid.events
