@@ -122,6 +122,9 @@
       grid.row.selectByKey = grid.row.selectByKey.bind(grid);
       grid.row.selectByIndex = grid.row.selectByIndex.bind(grid);
 
+      grid.column.getIndex = grid.column.getIndex.bind(grid);
+      grid.column.sort = grid.column.sort.bind(grid);
+
       grid.utility.parseValue = grid.utility.parseValue.bind(grid);
       grid.utility.hasCustomField = grid.utility.hasCustomField.bind(grid);
       grid.utility.getCustomFields = grid.utility.getCustomFields.bind(grid);
@@ -672,9 +675,9 @@
       const grid = this;
 
       if (grid.table.tBodies.length) {
-        if (grid.options.gridName) {
+        //if (grid.options.gridName) {
           grid.table.removeChild(grid.table.tBodies[0]);
-        }
+        //}
       }
 
       return grid;
@@ -957,6 +960,11 @@
           imgSort.alt = "";
         }
 
+        if (!grid.gridName) {
+          const sorted = grid.column.sort(Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
+          grid.rowData = sorted;
+        }
+
         // After sort
         grid.on.sorted(sender, event);
       },
@@ -979,6 +987,10 @@
         // Update table
         if (grid.options.gridName) {
           grid.fetchRowData();
+        } else {
+          grid
+            .removeTableBody()
+            .createTableBody(); // todo: need a cleaner way to update body
         }
 
         // Call user-defined event
@@ -1746,34 +1758,59 @@
       }
     },
     column: {
-      sort: function (sortList) {
-        // sort = sortOrder.split(",");
-        // sort.reverse().map((sortName, currIndex) => {
-        //   const index = sortName.split(" ")[0];
-        //   const order = sortName.split(" ")[1];
-          
-        //   // asc
-        //   if (order === "ASC") {
-        //     array.sort((a, b) => {
-        //       if (typeof a[index] === "number") {
-        //         return a[index] - b[index];
-        //       } else {
-        //         return a[index].localeCompare(b[index]);
-        //       }
-        //     });
-        //   }
+      getIndex: function(fieldName) {
+        const grid = this;
 
-        //   // desc
-        //   if (order === "DESC") {
-        //     array.sort((a, b) => {
-        //       if (typeof a[index] === "number") {
-        //         return b[index] - a[index];
-        //       } else {
-        //         return b[index].localeCompare(a[index]);
-        //       }
-        //     });
-        //   }
-        // });
+        return grid.columns
+          .filter(function(column) {
+            return !column.hasOwnProperty("type");
+          })
+          .findIndex(function(column) {
+            return fieldName === column.fieldName;
+          });
+      },
+      sort: function (sortList, rowData) {
+        const grid = this;
+        const sorted = rowData;
+        
+        console.clear();
+        console.log("-- sort start -- ");
+        sortList.reverse().map((sortName) => {
+          const fieldName = sortName.split(" ")[0];
+          const direction = sortName.split(" ")[1];
+          const index = grid.column.getIndex(fieldName);
+          
+          console.log("sort field name:" + fieldName);
+          console.log("sort direction:" + direction);
+          console.log("column index:" + index);
+          
+          // asc
+          if (direction === "ASC") {
+            sorted.sort((a, b) => {
+              if (typeof a[index] === "string") {
+                return a[index].localeCompare(b[index]);
+              } else {
+                return a[index] - b[index];
+              }
+            });
+          }
+
+          // desc
+          if (direction === "DESC") {
+            sorted.sort((a, b) => {
+              if (typeof a[index] === "string") {
+                return b[index].localeCompare(a[index]);
+              } else {
+                return b[index] - a[index];
+              }
+            });
+          }
+
+          console.log(sorted);
+        });
+        console.log("-- sort end -- ");
+
+        return sorted;
       }
     }
   };
