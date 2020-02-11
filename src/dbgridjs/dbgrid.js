@@ -1174,8 +1174,7 @@
 
         // Do default behavior first
         // Verify if sender is checkboxAll or checkbox
-        const isSenderCheckboxAll =
-          sender.className.indexOf("checkbox-all") > -1;
+        const isSenderCheckboxAll = sender.className.indexOf("checkbox-all") > -1;
         const checkboxAll = isSenderCheckboxAll
           ? sender
           : grid.table.tHead.querySelector("th input[type=checkbox]");
@@ -1201,7 +1200,7 @@
               grid.table.tBodies[0].querySelectorAll("td input[type=checkbox]")
             );
 
-            if (checkboxes.length > 0) {
+            if (checkboxes.length === grid.rowData.length) {
               let hasUnchecked = false;
 
               checkboxes.forEach(function (checkbox) {
