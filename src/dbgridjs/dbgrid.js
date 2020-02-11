@@ -20,6 +20,8 @@
       allowPaging: true,
       pageSize: 10,
       pagerCount: 10,
+      dateFormat: { localeMatcher: "best fit", month: "2-digit", day: "2-digit", year: "numeric"},
+      locales: "en-US",
       columns: [
         // Stucture:
         // { type: "checkbox", hideColumn: true, autoCheck: true },
@@ -64,8 +66,8 @@
     grid.rowData = [];
     grid.sortList = [];
     grid.totalRecords = 0;
-    grid.selectedPageIndex = 1; // non-zero based index
-    grid.selectedIndex = 0; // non-zero based index
+    grid.selectedPageIndex = 0; // zero based index
+    grid.selectedIndex = 0; // zero based index
     grid.initialization = false;
 
     // Initialization
@@ -91,6 +93,7 @@
       grid.getWrapper();
 
       // Bindings
+      // Events
       grid.on.creating = grid.on.creating.bind(grid);
       grid.on.created = grid.on.created.bind(grid);
       grid.on.sort= grid.on.sort.bind(grid);
@@ -108,11 +111,11 @@
       grid.on.pageIndexChange = grid.on.pageIndexChange.bind(grid);
       grid.on.pageIndexChanging = grid.on.pageIndexChanging.bind(grid);
       grid.on.pageIndexChanged = grid.on.pageIndexChanged.bind(grid);
-
+      // Service
       grid.service.getColumns = grid.service.getColumns.bind(grid);
       grid.service.getRowData = grid.service.getRowData.bind(grid);
       grid.service.getRowKeys = grid.service.getRowKeys.bind(grid);
-
+      // Row
       grid.row.getData = grid.row.getData.bind(grid);
       grid.row.getSelectedKeys = grid.row.getSelectedKeys.bind(grid);
       grid.row.getAllKeys = grid.row.getAllKeys.bind(grid);
@@ -122,13 +125,17 @@
       grid.row.selectByKey = grid.row.selectByKey.bind(grid);
       grid.row.selectByIndex = grid.row.selectByIndex.bind(grid);
       grid.row.parseValue = grid.row.parseValue.bind(grid);
-
+      // Column
+      grid.column.getFieldByName = grid.column.getFieldByName.bind(grid);
+      grid.column.getFieldByIndex = grid.column.getFieldByIndex.bind(grid);
       grid.column.hasCustomField = grid.column.hasCustomField.bind(grid);
       grid.column.getCustomFields = grid.column.getCustomFields.bind(grid);
       grid.column.getCustomField = grid.column.getCustomField.bind(grid);
       grid.column.getIndex = grid.column.getIndex.bind(grid);
       grid.column.sort = grid.column.sort.bind(grid);
-
+      // Pager
+      grid.pager.selectByIndex = grid.pager.selectByIndex.bind(grid);
+      // Utility
       grid.utility.getServiceURL = grid.utility.getServiceURL.bind(grid);
 
       return grid;
@@ -494,8 +501,8 @@
     createTableFootData: function (props) {
       const grid = this;
       const th = document.createElement("th");
-      const pageGroup = Math.ceil(props.selectedPageIndex / props.pagerCount);
-      const totalPages = Math.ceil(props.totalRecords / props.pageSize);
+      const pageGroup = Math.floor(props.selectedPageIndex / props.pagerCount) + 1;
+      const totalPages = Math.floor(props.totalRecords / props.pageSize);
       
       // Add previous paging
       if (pageGroup > 1) {
@@ -513,10 +520,10 @@
       }
 
       // Add paging
-      let startIndex = (pageGroup - 1) * props.pagerCount + 1;
+      let startIndex = (pageGroup - 1) * props.pagerCount;
       let endIndex = Math.min(pageGroup * props.pagerCount, totalPages);
 
-      for (let i = startIndex; i <= endIndex; i++) {
+      for (let i = startIndex; i < endIndex; i++) {
         const a = document.createElement("a");
 
         // Add class
@@ -529,7 +536,7 @@
         // Add event
         a.addEventListener("click", grid.on.pageIndexChange.bind(grid, a));
 
-        a.appendChild(document.createTextNode(i));
+        a.appendChild(document.createTextNode(i + 1));// diplay start at 1
 
         // Add attibute
         a.value = i;
@@ -694,11 +701,11 @@
     updateTableBodyRows: function() {
       const grid = this;
       const rows = grid.table.tBodies[0].querySelectorAll("tr");
-      const rowIndex = grid.selectedIndex || 1;
-      const pageIndex = Math.ceil(rowIndex / grid.options.pageSize);
+      const rowIndex = grid.selectedIndex;
+      const pageIndex = Math.floor(rowIndex / grid.options.pageSize);
 
       rows.forEach(function(row) {
-        const included = Math.ceil(row.rowIndex / grid.options.pageSize) === pageIndex;
+        const included = Math.floor((row.rowIndex - 1) / grid.options.pageSize) === pageIndex;
 
         if (!included) {
           row.classList.add("hidden");
@@ -876,13 +883,22 @@
       },
       created: function () {
         const grid = this;
-
-        grid.initialization = false;
-
+        
         // Do default behavior first
+        grid.initialization = false;
         grid
           .showTable()
           .hideLoading();
+        
+        // Select first
+        if (!grid.row.cancelSelectOnClick) {
+          grid.row.selectByIndex(0);
+        }
+
+        if (grid.options.allowPaging) {
+          grid.selectedPageIndex = 0;
+          grid.updateTableBodyRows()
+        }
 
         // Toggle all
         if (grid.column.hasCustomField("toggle")) {
@@ -914,91 +930,6 @@
           grid.events.created.call(grid);
         }
       },
-      sort: function (sender, imgSort, event) {
-        const grid = this;
-
-        // Before sort
-        grid.on.sorting(sender, event);
-
-        // Sort list and direction
-        const sortName = sender.sortName;
-        let sortDirection = sender.sortDirection;
-
-        if (sortDirection === "") {
-          // Update sort list
-          sortDirection = "ASC";
-          sender.sortDirection = sortDirection;
-          grid.sortList.push(sortName + " " + sortDirection);
-
-          // Update sort image
-          imgSort.classList.remove("hidden");
-          imgSort.src = grid.options.assetsURL.sortAsc;
-          imgSort.alt = "";
-        } else if (sortDirection === "ASC") {
-          // Update sort list
-          let index = grid.sortList.indexOf(sortName + " " + sortDirection);
-
-          sortDirection = "DESC";
-          sender.sortDirection = sortDirection;
-          grid.sortList.splice(index, 1, sortName + " " + sortDirection);
-
-          // Update sort image
-          imgSort.classList.remove("hidden");
-          imgSort.src = grid.options.assetsURL.sortDesc;
-          imgSort.alt = "";
-        } else if (sortDirection === "DESC") {
-          // Update sort list
-          let index = grid.sortList.indexOf(sortName + " " + sortDirection);
-
-          sortDirection = "";
-          sender.sortDirection = sortDirection;
-          grid.sortList.splice(index, 1);
-
-          // Update sort image
-          imgSort.classList.add("hidden");
-          imgSort.src = "#";
-          imgSort.alt = "";
-        }
-
-        if (!grid.gridName) {
-          const sorted = grid.column.sort(Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
-          grid.rowData = sorted;
-        }
-
-        // After sort
-        grid.on.sorted(sender, event);
-      },
-      sorting: function (sender, event) {
-        const grid = this;
-
-        // Do default behavior first
-
-        // Call user-defined event
-        if (grid.events
-          && typeof grid.events.sorting === "function") {
-          grid.events.sorting.call(grid, sender, event);
-        }
-      },
-      sorted: function (sender, event) {
-        const grid = this;
-
-        // Do default behavior first
-
-        // Update table
-        if (grid.options.gridName) {
-          grid.fetchRowData();
-        } else {
-          grid
-            .removeTableBody()
-            .createTableBody(); // todo: need a cleaner way to update body
-        }
-
-        // Call user-defined event
-        if (grid.events
-          && typeof grid.events.sorted === "function") {
-          grid.events.sorted.call(grid, sender, event);
-        }
-      },
       columnCreated: function (sender) {
         const grid = this;
 
@@ -1022,21 +953,18 @@
           // Update header
           grid
             .hideCaption()
-            .showTableHeader()
+            .showTableHeader();
 
-          if (grid.options.allowPaging) {
-            // Update selected index
-            if (!grid.options.cancelSelectOnClick) {
-              sender.select();
-              grid.selectedPageIndex = Math.ceil(sender.rowIndex / grid.options.pageSize);
-            }
+          // if (grid.options.allowPaging) {
+          //   // Update selected index
+          //   if (!grid.options.cancelSelectOnClick) {
+          //     sender.select();
 
-            // Update body and footer
-            grid
-              .updateTableBodyRows()
-              .removeTableFoot()
-              .createTableFoot();
-          }
+          //     if (!grid.initialization) {
+          //       grid.selectedPageIndex = Math.floor(sender.rowIndex / grid.options.pageSize);
+          //     }
+          //   }
+          // }
         }
 
         // Toggle: create tr.toggle-row here
@@ -1309,8 +1237,10 @@
         // Before row select
         grid.on.selectedIndexChanging(sender, event);
 
-        grid.selectedIndex = sender.rowIndex;
+        // Update selected index
+        grid.selectedIndex = sender.rowIndex - 1; // rowIndex is non-zero based index
 
+        // Update selected row highlight
         const row = grid.table.tBodies[0].querySelector("tr.selected");
 
         if (row) {
@@ -1347,24 +1277,30 @@
       pageIndexChange: function (sender, event) {
         const grid = this;
 
+        if (sender.getAttribute("disabled")) {
+          return false;
+        }
+
         // Before paging
         grid.on.pageIndexChanging(sender, event);
-
+        
         // Update selected page index
-        const value = sender.value;
-        let selectedPageIndex = Number(grid.selectedPageIndex);
-        const pageGroup = Math.ceil(selectedPageIndex / grid.options.pagerCount);
-
-        if (value === "previous") {
-          selectedPageIndex = (pageGroup - 2) * grid.options.pagerCount + 1; // add offset 1
-        } else if (value === "next") {
-          selectedPageIndex = pageGroup * grid.options.pagerCount + 1; // add offset 1
+        const selectedPagerValue = sender.value;
+        let selectedPageIndex = typeof selectedPagerValue === "number"
+          ? Number(selectedPagerValue)
+          : grid.selectedPageIndex;
+        const pageGroup = Math.floor(selectedPageIndex / grid.options.pagerCount) + 1;
+        
+        if (selectedPagerValue === "previous") {
+          selectedPageIndex = (pageGroup - 2) * grid.options.pagerCount;
+        } else if (selectedPagerValue === "next") {
+          selectedPageIndex = pageGroup * grid.options.pagerCount;
         } else {
-          selectedPageIndex = Number(value);
+          selectedPageIndex = Number(selectedPagerValue);
         }
 
         grid.selectedPageIndex = selectedPageIndex;
-        sender.pageIndex = grid.selectedPageIndex;
+        //sender.pageIndex = grid.selectedPageIndex; // not used
 
         // Upadate selected pager
         const selectedPager = grid.table.tFoot.querySelector("th a.selected");
@@ -1377,25 +1313,29 @@
         sender.classList.add("selected");
         sender.setAttribute("disabled", true);
 
-        // Update table
+        // Update rows
         if (grid.options.gridName) {
           if (!grid.options.cancelSelectOnClick) {
-            grid.selectedIndex = 1; // always return to first
+            grid.selectedIndex = 0; // always return to first
           }
 
           grid.fetchRowData();
         } else {
           if (!grid.options.cancelSelectOnClick) {
-            let selectedIndex = 1;
+            let selectedIndex = 0;
 
-            if (grid.selectedPageIndex > 1) {
-              selectedIndex = ((grid.selectedPageIndex - 1) * grid.options.pageSize) + 1;
+            if (grid.selectedPageIndex > 0) {
+              selectedIndex = grid.selectedPageIndex * grid.options.pageSize;
             }
-
+            
             grid.row.selectByIndex(selectedIndex);
           }
           
-          grid.updateTableBodyRows();
+          // Show/hide rows
+          grid
+            .updateTableBodyRows()
+            .removeTableFoot()
+            .createTableFoot();
         }
 
         // After paging
@@ -1422,7 +1362,99 @@
           && typeof grid.events.pageIndexChanged === "function") {
           grid.events.pageIndexChanged.call(grid, sender, event);
         }
-      }
+      },
+      sort: function (sender, imgSort, event) {
+        const grid = this;
+
+        // Before sort
+        grid.on.sorting(sender, event);
+
+        // Sort list and direction
+        const sortName = sender.sortName;
+        let sortDirection = sender.sortDirection;
+
+        if (sortDirection === "") {
+          // Update sort list
+          sortDirection = "ASC";
+          sender.sortDirection = sortDirection;
+          grid.sortList.push(sortName + " " + sortDirection);
+
+          // Update sort image
+          imgSort.classList.remove("hidden");
+          imgSort.src = grid.options.assetsURL.sortAsc;
+          imgSort.alt = "";
+        } else if (sortDirection === "ASC") {
+          // Update sort list
+          let index = grid.sortList.indexOf(sortName + " " + sortDirection);
+
+          sortDirection = "DESC";
+          sender.sortDirection = sortDirection;
+          grid.sortList.splice(index, 1, sortName + " " + sortDirection);
+
+          // Update sort image
+          imgSort.classList.remove("hidden");
+          imgSort.src = grid.options.assetsURL.sortDesc;
+          imgSort.alt = "";
+        } else if (sortDirection === "DESC") {
+          // Update sort list
+          let index = grid.sortList.indexOf(sortName + " " + sortDirection);
+
+          sortDirection = "";
+          sender.sortDirection = sortDirection;
+          grid.sortList.splice(index, 1);
+
+          // Update sort image
+          imgSort.classList.add("hidden");
+          imgSort.src = "#";
+          imgSort.alt = "";
+        }
+
+        // Update table
+        if (grid.options.gridName) {
+          grid.fetchRowData();
+        } else {
+          const sorted = grid.column.sort(Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
+          
+          grid.rowData = sorted;
+          grid
+            .removeTableBody()
+            .createTableBody(); // todo: need a cleaner way to update body
+          
+          if (!grid.options.cancelSelectOnClick) {
+            grid.row.selectByIndex(0);
+          }
+
+          if (grid.options.allowPaging) {
+            grid.pager.selectByIndex(0);
+            grid.updateTableBodyRows();
+          }
+        }
+
+        // After sort
+        grid.on.sorted(sender, event);
+      },
+      sorting: function (sender, event) {
+        const grid = this;
+
+        // Do default behavior first
+
+        // Call user-defined event
+        if (grid.events
+          && typeof grid.events.sorting === "function") {
+          grid.events.sorting.call(grid, sender, event);
+        }
+      },
+      sorted: function (sender, event) {
+        const grid = this;
+
+        // Do default behavior first
+
+        // Call user-defined event
+        if (grid.events
+          && typeof grid.events.sorted === "function") {
+          grid.events.sorted.call(grid, sender, event);
+        }
+      },
     },
     utility: {
       getServiceURL: function () {
@@ -1679,14 +1711,15 @@
         const grid = this;
         const rows = grid.row.getNodes();
 
-        rows.forEach(function(row) {
-          const rowIndex = row.rowIndex;
+        rows[index].select();
+        // .forEach(function(row) {
+        //   const rowIndex = row.rowIndex;
 
-          if (index === rowIndex) {
-            row.click();
-            return false;
-          }
-        });
+        //   if (index === rowIndex) {
+        //     row.click();
+        //     return false;
+        //   }
+        // });
 
         return grid;
       },
@@ -1709,6 +1742,26 @@
       },
     },
     column: {
+      getFieldByName: function(fieldName) {
+        const grid = this;
+        return grid.columns
+          .filter(function(column) {
+            return !column.hasOwnProperty("type");
+          })
+          .find(function(column) {
+            return column.fieldName === fieldName;
+          });
+      },
+      getFieldByIndex: function(fieldIndex) {
+        const grid = this;
+        return grid.columns
+          .filter(function(column) {
+            return !column.hasOwnProperty("type");
+          })
+          .find(function(column, index) {
+            return index === fieldIndex;
+          });
+      },
       hasCustomField: function (name) {
         /// <summary>Checks the custom field name object property.</summary>
         /// <returns type="Object">Returns true if custom field exists.</returns>
@@ -1750,7 +1803,6 @@
         for (let i = 0; i < customFields.length; i++) {
           if (customFields[i].type == name) {
             customField = customFields[i];
-
             break;
           }
         }
@@ -1771,45 +1823,49 @@
       sort: function (sortList, rowData) {
         const grid = this;
         const sorted = rowData;
-        
-        console.clear();
-        console.log("-- sort start -- ");
-        sortList.reverse().map((sortName) => {
-          const fieldName = sortName.split(" ")[0];
-          const direction = sortName.split(" ")[1];
-          const index = grid.column.getIndex(fieldName);
-          
-          console.log("sort field name:" + fieldName);
-          console.log("sort direction:" + direction);
-          console.log("column index:" + index);
-          
-          // asc
-          if (direction === "ASC") {
-            sorted.sort((a, b) => {
-              if (typeof a[index] === "string") {
-                return a[index].localeCompare(b[index]);
-              } else {
-                return a[index] - b[index];
-              }
-            });
-          }
 
-          // desc
-          if (direction === "DESC") {
-            sorted.sort((a, b) => {
-              if (typeof a[index] === "string") {
-                return b[index].localeCompare(a[index]);
-              } else {
-                return b[index] - a[index];
-              }
-            });
-          }
+        sortList
+          .reverse()
+          .map((sort) => {
+            const fieldName = sort.split(" ")[0];
+            const direction = sort.split(" ")[1];
+            const index = grid.column.getIndex(fieldName);
+            const fieldType = grid.column.getFieldByIndex(index).fieldType;
 
-          console.log(sorted);
-        });
-        console.log("-- sort end -- ");
+            if (direction === "ASC") {
+              sorted.sort((a, b) => {
+                if (fieldType === "string") {
+                  return a[index].localeCompare(b[index]);
+                } else if (fieldType === "number") {
+                  return Number(a[index]) - Number(b[index]);
+                } else if (fieldType === "date") {
+                  return new Date(a[index]) - new Date(b[index]);
+                }
+              });
+            } else if (direction === "DESC") {
+              sorted.sort((a, b) => {
+                if (fieldType === "string") {
+                  return b[index].localeCompare(a[index]);
+                } else if (fieldType === "number") {
+                  return Number(b[index]) - Number(a[index]);
+                } else if (fieldType === "date") {
+                  return new Date(b[index]) - new Date(a[index]);
+                }
+              });
+            }
+          });
 
         return sorted;
+      }
+    },
+    pager: {
+      selectByIndex: function(index) {
+        const grid = this;
+        const pagers = grid.table.tFoot.querySelectorAll("th a");
+
+        pagers[index].click();
+
+        return grid;
       }
     }
   };
