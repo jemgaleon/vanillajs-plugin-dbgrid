@@ -1425,7 +1425,7 @@
           }
 
           if (grid.options.allowPaging) {
-            grid.pager.selectByIndex(0);
+            grid.pager.selectByIndex(0); // todo fix reset 
             grid.updateTableBodyRows();
           }
         }
@@ -1863,6 +1863,10 @@
         const grid = this;
         const pagers = grid.table.tFoot.querySelectorAll("th a");
 
+        grid.selectedPageIndex = index;
+        grid
+          .removeTableFoot()
+          .createTableFoot();
         pagers[index].click();
 
         return grid;
