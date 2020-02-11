@@ -121,14 +121,14 @@
       grid.row.select = grid.row.select.bind(grid);
       grid.row.selectByKey = grid.row.selectByKey.bind(grid);
       grid.row.selectByIndex = grid.row.selectByIndex.bind(grid);
+      grid.row.parseValue = grid.row.parseValue.bind(grid);
 
+      grid.column.hasCustomField = grid.column.hasCustomField.bind(grid);
+      grid.column.getCustomFields = grid.column.getCustomFields.bind(grid);
+      grid.column.getCustomField = grid.column.getCustomField.bind(grid);
       grid.column.getIndex = grid.column.getIndex.bind(grid);
       grid.column.sort = grid.column.sort.bind(grid);
 
-      grid.utility.parseValue = grid.utility.parseValue.bind(grid);
-      grid.utility.hasCustomField = grid.utility.hasCustomField.bind(grid);
-      grid.utility.getCustomFields = grid.utility.getCustomFields.bind(grid);
-      grid.utility.getCustomField = grid.utility.getCustomField.bind(grid);
       grid.utility.getServiceURL = grid.utility.getServiceURL.bind(grid);
 
       return grid;
@@ -781,7 +781,7 @@
     },
     addRow: function (cells) {
       const grid = this;
-      const customFields = grid.utility.getCustomFields();
+      const customFields = grid.column.getCustomFields();
       const rowData = customFields.concat(cells).map(function (cell, index) {
         let data = null;
 
@@ -885,8 +885,8 @@
           .hideLoading();
 
         // Toggle all
-        if (grid.utility.hasCustomField("toggle")) {
-          const customField = grid.utility.getCustomField("toggle");
+        if (grid.column.hasCustomField("toggle")) {
+          const customField = grid.column.getCustomField("toggle");
 
           if (!customField.hideColumn && customField.autoOpen) {
             const imgToggleAll = grid.table.tHead.querySelector("th img[type='toggle']");
@@ -897,8 +897,8 @@
         }
 
         // Checkbox All
-        if (grid.utility.hasCustomField("checkbox")) {
-          const customField = grid.utility.getCustomField("checkbox");
+        if (grid.column.hasCustomField("checkbox")) {
+          const customField = grid.column.getCustomField("checkbox");
 
           if (!customField.hideColumn && customField.autoCheck) {
             const checkboxAll = grid.table.tHead.querySelector("th input[type='checkbox']");
@@ -1040,7 +1040,7 @@
         }
 
         // Toggle: create tr.toggle-row here
-        if (grid.utility.hasCustomField("toggle")) {
+        if (grid.column.hasCustomField("toggle")) {
           const trToggle = document.createElement("tr");
           const tdToggle = document.createElement("td");
           const colSpan = grid.columns.filter(function (column) {
@@ -1061,8 +1061,8 @@
         }
 
         // Checkbox
-        if (grid.utility.hasCustomField("checkbox")) {
-          const customField = grid.utility.getCustomField("checkbox");
+        if (grid.column.hasCustomField("checkbox")) {
+          const customField = grid.column.getCustomField("checkbox");
           const checkbox = sender.querySelector("td input[type=checkbox]");
           const selectedKeys = grid.row.getSelectedKeys();
 
@@ -1082,7 +1082,7 @@
       },
       rowToggleCreated: function (parentRow, sender) {
         const grid = this;
-        const customField = grid.utility.getCustomField("toggle");
+        const customField = grid.column.getCustomField("toggle");
 
         // Do default behavior first
         if (customField.autoOpen) {
@@ -1426,71 +1426,6 @@
       }
     },
     utility: {
-      parseValue: function (value, type) {
-        /// <summary>Formats the data type. Note: parsing is done in web service row data.</summary>
-        /// <returns type="Object">Returns the parsed data.</returns>
-
-        let newValue = null;
-
-        if (type === "date") {
-          newValue =
-            value !== "" ? new Date(value).toLocaleDateString() : value;
-        } else if (type === "number") {
-          newValue = Number(value);
-        } else {
-          newValue = value;
-        }
-
-        return newValue;
-      },
-      hasCustomField: function (name) {
-        /// <summary>Checks the custom field name object property.</summary>
-        /// <returns type="Object">Returns true if custom field exists.</returns>
-
-        const grid = this;
-        const customFields = grid.columns.filter(function (column) {
-          return column.hasOwnProperty("type");
-        }, []);
-        let hasCustomField = false;
-
-        for (let i = 0; i < customFields.length; i++) {
-          if (customFields[i].type == name) {
-            hasCustomField = true;
-            break;
-          }
-        }
-
-        return hasCustomField;
-      },
-      getCustomFields: function () {
-        /// <summary>Gets the custom field name object property.</summary>
-        /// <returns type="Object">Returns the custom field.</returns>
-
-        const grid = this;
-        const customFields = grid.columns.filter(function (column) {
-          return column.hasOwnProperty("type");
-        });
-
-        return customFields;
-      },
-      getCustomField: function (name) {
-        /// <summary>Gets the custom field name object property.</summary>
-        /// <returns type="Object">Returns the custom field.</returns>
-
-        const grid = this;
-        const customFields = grid.utility.getCustomFields();
-        let customField = null;
-
-        for (let i = 0; i < customFields.length; i++) {
-          if (customFields[i].type == name) {
-            customField = customFields[i];
-
-            break;
-          }
-        }
-
-        return customField;
-      },
       getServiceURL: function () {
         /// <summary>Gets the constructed web service URL.</summary>
         /// <returns type="Object">Returns an object containing the URL.</returns>
@@ -1755,9 +1690,74 @@
         });
 
         return grid;
-      }
+      },
+      parseValue: function (value, type) {
+        /// <summary>Formats the data type. Note: parsing is done in web service row data.</summary>
+        /// <returns type="Object">Returns the parsed data.</returns>
+
+        let newValue = null;
+
+        if (type === "date") {
+          newValue =
+            value !== "" ? new Date(value).toLocaleDateString() : value;
+        } else if (type === "number") {
+          newValue = Number(value);
+        } else {
+          newValue = value;
+        }
+
+        return newValue;
+      },
     },
     column: {
+      hasCustomField: function (name) {
+        /// <summary>Checks the custom field name object property.</summary>
+        /// <returns type="Object">Returns true if custom field exists.</returns>
+
+        const grid = this;
+        const customFields = grid.columns.filter(function (column) {
+          return column.hasOwnProperty("type");
+        }, []);
+        let hasCustomField = false;
+
+        for (let i = 0; i < customFields.length; i++) {
+          if (customFields[i].type == name) {
+            hasCustomField = true;
+            break;
+          }
+        }
+
+        return hasCustomField;
+      },
+      getCustomFields: function () {
+        /// <summary>Gets the custom field name object property.</summary>
+        /// <returns type="Object">Returns the custom field.</returns>
+
+        const grid = this;
+        const customFields = grid.columns.filter(function (column) {
+          return column.hasOwnProperty("type");
+        });
+
+        return customFields;
+      },
+      getCustomField: function (name) {
+        /// <summary>Gets the custom field name object property.</summary>
+        /// <returns type="Object">Returns the custom field.</returns>
+
+        const grid = this;
+        const customFields = grid.column.getCustomFields();
+        let customField = null;
+
+        for (let i = 0; i < customFields.length; i++) {
+          if (customFields[i].type == name) {
+            customField = customFields[i];
+
+            break;
+          }
+        }
+
+        return customField;
+      },
       getIndex: function(fieldName) {
         const grid = this;
 
