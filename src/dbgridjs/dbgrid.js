@@ -92,7 +92,7 @@
       // Init grid's container/wrapper
       grid.getWrapper();
 
-      // Bindings
+      // Inir bindings
       // Events
       grid.on.creating = grid.on.creating.bind(grid);
       grid.on.created = grid.on.created.bind(grid);
@@ -1425,7 +1425,7 @@
           }
 
           if (grid.options.allowPaging) {
-            grid.pager.selectByIndex(0); // todo fix reset 
+            grid.pager.selectByIndex(0);
             grid.updateTableBodyRows();
           }
         }
@@ -1867,7 +1867,6 @@
         grid
           .removeTableFoot()
           .createTableFoot();
-        pagers[index].click();
 
         return grid;
       }
