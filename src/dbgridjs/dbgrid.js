@@ -85,7 +85,8 @@
       grid.initialization = true;
 
       // Init primaryKeyName value
-      if (grid.options.dataKeyNames.length) {
+      if (grid.options.dataKeyNames.length
+        && !grid.options.primaryKeyName) {
         grid.options.primaryKeyName = grid.options.dataKeyNames.split(",")[0];
       }
 
@@ -152,6 +153,12 @@
         .hideTable() // show table after hide loader
         .attachToWrapper()
         .createContent();
+
+      //todo: move created event here if async/await
+      // if (grid.initialization) {
+      //   grid.success = true;
+      //   grid.on.created();
+      // }
 
       return grid;
     },
@@ -220,7 +227,8 @@
           if (grid.options.allowPaging) {
             grid
               .removeTableFoot()
-              .createTableFoot();
+              .createTableFoot()
+              .updateTableBodyRows();
           }
         } else {
           grid.showCaption();
@@ -357,8 +365,7 @@
         let tableDataProps = {};
 
         // Create custom row data
-        if (props.rowData[i].hasOwnProperty("type")
-          && props.rowData[i].type === "custom") {
+        if (props.rowData[i].hasOwnProperty("type")) {
           // Checkbox
           if (props.rowData[i].cellValue === "checkbox") {
             tableDataProps = {
@@ -378,7 +385,7 @@
             };
           }
 
-          const td = grid.createCustomTableData.call(grid, tableDataProps, tr);
+          const td = grid.createCustomTableData(tableDataProps, tr);
           tr.appendChild(td);
         }
         // Create default row data
@@ -447,7 +454,7 @@
       let textNode = "";
 
       // Column with sorting
-      if (grid.options.allowSorting && props.cellValue !== "") {
+      if (grid.options.allowSorting) {
         const imgSort = document.createElement("img");
         const a = document.createElement("a");
 
@@ -477,8 +484,7 @@
 
         span.appendChild(textNode);
         span.classList.add("default");
-
-        th.appendChild(control);
+        th.appendChild(span);
       }
 
       return th;
@@ -893,11 +899,6 @@
         // Select first
         if (!grid.row.cancelSelectOnClick) {
           grid.row.selectByIndex(0);
-        }
-
-        if (grid.options.allowPaging) {
-          grid.selectedPageIndex = 0;
-          grid.updateTableBodyRows()
         }
 
         // Toggle all

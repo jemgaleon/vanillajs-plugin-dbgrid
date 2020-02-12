@@ -44,6 +44,7 @@
 }
 
 .dbgridjs thead th a,
+.dbgridjs thead th span,
 .dbgridjs tfoot th a {
     color: #fff;
 }
