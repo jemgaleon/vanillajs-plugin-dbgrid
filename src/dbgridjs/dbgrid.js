@@ -77,7 +77,7 @@
   };
 
   // Public Methods
-  DBGrid.prototype = {
+  this.DBGrid.prototype = {
     init: function () {
       const grid = this;
 
@@ -97,7 +97,7 @@
       // Events
       grid.on.creating = grid.on.creating.bind(grid);
       grid.on.created = grid.on.created.bind(grid);
-      grid.on.sort= grid.on.sort.bind(grid);
+      grid.on.sort = grid.on.sort.bind(grid);
       grid.on.sorting = grid.on.sorting.bind(grid);
       grid.on.sorted = grid.on.sorted.bind(grid);
       grid.on.rowCreated = grid.on.rowCreated.bind(grid);
@@ -112,6 +112,7 @@
       grid.on.pageIndexChange = grid.on.pageIndexChange.bind(grid);
       grid.on.pageIndexChanging = grid.on.pageIndexChanging.bind(grid);
       grid.on.pageIndexChanged = grid.on.pageIndexChanged.bind(grid);
+
       // Service
       grid.service.getColumns = grid.service.getColumns.bind(grid);
       grid.service.getRowData = grid.service.getRowData.bind(grid);
@@ -219,20 +220,24 @@
 
         grid
           .removeTableHead()
-          .createTableHead()
           .removeTableBody()
+          .removeTableFoot()
+          .createTableHead()
           .createTableBody()
+          .createTableFoot()
+          .hideTableHead()
           .setWrapper();
 
         if (grid.rowData.length > 0) {
+          grid.showTableHead();
+          
           if (grid.options.allowPaging) {
             grid
-              .removeTableFoot()
-              .createTableFoot()
               .updateTableBodyRows();
           }
         } else {
-          grid.showCaption();
+          grid
+            .showCaption();
         }
 
         if (grid.initialization) {
@@ -328,7 +333,7 @@
       for (let i = 0; i < grid.rowData.length; i++) {
         const rowData = grid.rowData[i];
 
-        grid.addRow(rowData);
+        grid.addRow(rowData, true);
       }
 
       return grid;
@@ -336,24 +341,24 @@
     createTableFoot: function () {
       const grid = this;
 
-      if (!grid.totalRecords) return;
-
       grid.table.tFoot = document.createElement("tfoot");
 
-      const rowData = [
-        {
-          pageSize: grid.options.pageSize,
-          pagerCount: grid.options.pagerCount,
-          selectedPageIndex: grid.selectedPageIndex,
-          totalRecords: grid.totalRecords
-        }
-      ];
-      const tr = grid.createTableRow({
-        isFoot: true,
-        rowData: rowData
-      });
+      if (grid.totalRecords) {
+        const rowData = [
+          {
+            pageSize: grid.options.pageSize,
+            pagerCount: grid.options.pagerCount,
+            selectedPageIndex: grid.selectedPageIndex,
+            totalRecords: grid.totalRecords
+          }
+        ];
+        const tr = grid.createTableRow({
+          isFoot: true,
+          rowData: rowData
+        });
 
-      grid.table.tFoot.appendChild(tr);
+        grid.table.tFoot.appendChild(tr);
+      }
 
       return grid;
     },
@@ -512,7 +517,7 @@
       const grid = this;
       const th = document.createElement("th");
       const pageGroup = Math.floor(props.selectedPageIndex / props.pagerCount) + 1;
-      const totalPages = Math.floor(props.totalRecords / props.pageSize);
+      const totalPages = Math.ceil(props.totalRecords / props.pageSize);
       
       // Add previous paging
       if (pageGroup > 1) {
@@ -681,8 +686,6 @@
       if (grid.table.tHead) {
         if (grid.options.gridName) {
           grid.table.deleteTHead();
-        } else {
-          grid.hideTableHeader();
         }
       }
 
@@ -737,17 +740,24 @@
       const grid = this;
 
       grid
-        .createTableCaption(caption)
-        .removeTableHead()
-        .removeTableBody()
-        .removeTableFoot();
+        .createTableCaption(caption);
+        // .removeTableHead()
+        // .removeTableBody()
+        // .removeTableFoot();
 
       return grid;
     },
-    showTableHeader: function () {
+    showTableHead: function () {
       const grid = this;
 
       grid.table.tHead.classList.remove("hidden");
+
+      return grid;
+    },
+    showTableFoot: function () {
+      const grid = this;
+
+      grid.table.tFoot.classList.remove("hidden");
 
       return grid;
     },
@@ -779,10 +789,17 @@
 
       return grid;
     },
-    hideTableHeader: function () {
+    hideTableHead: function () {
       const grid = this;
 
       grid.table.tHead.classList.add("hidden");
+
+      return grid;
+    },
+    hideTableFoot: function () {
+      const grid = this;
+
+      grid.table.tFoot.classList.add("hidden");
 
       return grid;
     },
@@ -796,7 +813,7 @@
 
       return grid;
     },
-    addRow: function (cells) {
+    addRow: function (cells, fromInternal = false) {
       const grid = this;
       const customFields = grid.column.getCustomFields();
       const rowData = customFields.concat(cells).map(function (cell, index) {
@@ -839,13 +856,13 @@
       grid.table.tBodies[0].appendChild(tr);
 
       // Add to rowData for custom data
-      if (!grid.options.gridName
-        && grid.options.rowData.length === 0) {
+      if (!fromInternal) {
         grid.rowData.push(cells);
+        grid.options.rowData.push(cells);
       }
 
       // Events
-      grid.on.rowCreated(tr);
+      grid.on.rowCreated.call(grid, tr);
 
       return tr;
     },
@@ -901,7 +918,8 @@
           .hideLoading();
         
         // Select first
-        if (!grid.row.cancelSelectOnClick) {
+        if (grid.rowData.length > 0
+          && !grid.row.cancelSelectOnClick) {
           grid.row.selectByIndex(0);
         }
 
@@ -958,18 +976,21 @@
           // Update header
           grid
             .hideCaption()
-            .showTableHeader();
+            .showTableHead();
 
-          // if (grid.options.allowPaging) {
-          //   // Update selected index
-          //   if (!grid.options.cancelSelectOnClick) {
-          //     sender.select();
-
-          //     if (!grid.initialization) {
-          //       grid.selectedPageIndex = Math.floor(sender.rowIndex / grid.options.pageSize);
-          //     }
-          //   }
-          // }
+          // Update selected index
+          if (!grid.options.cancelSelectOnClick) {
+            sender.select();
+          }
+            
+          if (grid.options.allowPaging) {
+            if (!grid.initialization) {
+              const pageIndex = Math.floor((sender.rowIndex - 1) / grid.options.pageSize);
+              grid.pager.selectByIndex(pageIndex);
+              
+              grid.updateTableBodyRows();
+            }
+          }
         }
 
         // Toggle: create tr.toggle-row here
@@ -1521,7 +1542,6 @@
               // Create table caption "Something went wrong."
               grid
                 .showCaption("Something went wrong.")
-                .showTable()
                 .hideLoading();
             }
           },
@@ -1529,7 +1549,6 @@
             // Create table caption "Something went wrong."
             grid
               .showCaption("Something went wrong.")
-              .showTable()
               .hideLoading();
 
             console.error(error);
@@ -1555,7 +1574,8 @@
 
               if (grid.totalRecords === 0) {
                 // Create table caption "No records found."
-                grid.showCaption();
+                grid
+                  .showCaption();
               } else {
                 // Create table body and foot (pager)
                 grid
@@ -1571,7 +1591,6 @@
             } else {
               grid
                 .showCaption("Something went wrong.")
-                .showTable()
                 .hideLoading();
             }
 
@@ -1586,7 +1605,6 @@
             // Create table caption "Something went wrong."
             grid
               .showCaption("Something went wrong.")
-              .showTable()
               .hideLoading();
 
             console.error(error);
