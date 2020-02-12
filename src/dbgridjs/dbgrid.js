@@ -134,6 +134,7 @@
       grid.column.getCustomField = grid.column.getCustomField.bind(grid);
       grid.column.getIndex = grid.column.getIndex.bind(grid);
       grid.column.sort = grid.column.sort.bind(grid);
+      grid.column.updateSortOrderText = grid.column.updateSortOrderText.bind(grid);
       // Pager
       grid.pager.selectByIndex = grid.pager.selectByIndex.bind(grid);
       // Utility
@@ -455,13 +456,14 @@
 
       // Column with sorting
       if (grid.options.allowSorting) {
-        const imgSort = document.createElement("img");
         const a = document.createElement("a");
+        const imgSort = document.createElement("img");
+        const spanOrder = document.createElement("span");
 
         // Add class
         a.classList.add("sortable");
-
         imgSort.classList.add("hidden");
+        spanOrder.classList.add("hidden");
 
         // Add attribute
         a.sortName = props.sortName;
@@ -475,8 +477,10 @@
 
         textNode = document.createTextNode(props.cellValue);
         a.appendChild(textNode);
+        spanOrder.appendChild(document.createTextNode(""));
         th.appendChild(a);
         th.appendChild(imgSort);
+        th.appendChild(spanOrder);
       } else {
         const span = document.createElement("span");
 
@@ -1373,12 +1377,13 @@
         // Sort list and direction
         const sortName = sender.sortName;
         let sortDirection = sender.sortDirection;
+        let sortClause = null;
 
         if (sortDirection === "") {
           // Update sort list
           sortDirection = "ASC";
-          sender.sortDirection = sortDirection;
-          grid.sortList.push(sortName + " " + sortDirection);
+          sortClause = sortName + " " + sortDirection;
+          grid.sortList.push(sortClause);
 
           // Update sort image
           imgSort.classList.remove("hidden");
@@ -1389,8 +1394,8 @@
           let index = grid.sortList.indexOf(sortName + " " + sortDirection);
 
           sortDirection = "DESC";
-          sender.sortDirection = sortDirection;
-          grid.sortList.splice(index, 1, sortName + " " + sortDirection);
+          sortClause = sortName + " " + sortDirection;
+          grid.sortList.splice(index, 1, sortClause);
 
           // Update sort image
           imgSort.classList.remove("hidden");
@@ -1401,7 +1406,6 @@
           let index = grid.sortList.indexOf(sortName + " " + sortDirection);
 
           sortDirection = "";
-          sender.sortDirection = sortDirection;
           grid.sortList.splice(index, 1);
 
           // Update sort image
@@ -1409,6 +1413,12 @@
           imgSort.src = "#";
           imgSort.alt = "";
         }
+
+        // Update sort direction
+        sender.sortDirection = sortDirection;
+
+        // Update sort order text
+        grid.column.updateSortOrderText();
 
         // Update table
         if (grid.options.gridName) {
@@ -1857,6 +1867,29 @@
           });
 
         return sorted;
+      },
+      updateSortOrderText: function() {
+        const grid = this;
+        const columns = Array.from(grid.table.tHead.querySelectorAll("th a"));
+
+        columns.map(function(column) {
+          const spanOrder = column.parent("th").querySelector("span");
+          const sortName = column.sortName;
+          const sortIndex = grid.sortList
+            .findIndex(function(clause) {
+              const clauseName = clause.split(" ")[0];
+
+              return clauseName === sortName;
+            });
+            
+          if (sortIndex > -1) {              
+            spanOrder.classList.remove("hidden");
+            spanOrder.textContent = sortIndex + 1;
+          } else {
+            spanOrder.classList.add("hidden");
+            spanOrder.textContent = "";
+          }
+        });
       }
     },
     pager: {
