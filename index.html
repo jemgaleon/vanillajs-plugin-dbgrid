@@ -13,9 +13,9 @@
     <div id="grdClient">
     </div>
 
-    <!-- <button id="btnAddItem">
+    <button id="btnAddItem">
       Add Item to grdCustom
-    </button> -->
+    </button>
     <div id="grdCustom">
     </div>
 
@@ -32,168 +32,107 @@
   <script src="./src/scripts/polyfill.js"></script>
   <script src="./src/dbgridjs/dbgrid.js"></script>
   <script>
-      //let exposeMe = null;
-      let grdClient = null;
-      // let grdCustom = null;
+      // let exposeMe = null;
       // let grdConfig = null;
       // let grdCeption = null;
 
       (function () {
         // Instance DBGrid Obj
-        grdClient = new DBGrid({
-          wrapper: "#grdClient",
-          dataKeyNames: "ID",
-          //allowPaging: false,
-          pageSize: 3,
-          pagerCount: 5,
-          width: 700,
-          columns: [
-            { type: "checkbox", hideColumn: false, autoCheck: false },
-            { fieldName: "ID", fieldHeader: "Key", fieldType: "number", fieldWidth: 0, displayOrder: 1, hideField: true, isDataKeyField: true },
-            { fieldName: "SEQUENCE", fieldHeader: "Sequence", fieldType: "number",fieldWidth: 110, displayOrder: 2, hideField: false, isDataKeyField: false },
-            { fieldName: "NUMBER", fieldHeader: "Number", fieldType: "number",fieldWidth: 110, displayOrder: 2, hideField: false, isDataKeyField: false },
-            { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldType: "string", fieldWidth: 115, displayOrder: 3, hideField: false, isDataKeyField: false },
-            { fieldName: "DATE", fieldHeader: "Date Created", fieldType: "date", fieldWidth: 200, displayOrder: 4, hideField: false, isDataKeyField: false }
-          ],
-          rowData: [
-            [1, 1, 3, "A", "02/01/20"],
-            [2, 1, 2, "B", "02/02/20"],
-            [3, 1, 1, "B", "02/03/20"],
-            [4, 2, 1, "C", "02/04/20"],
-            [5, 2, 2, "C", "02/05/20"],
-            [6, 2, 1, "A", "02/06/20"],
-            [7, 3, 4, "A", "02/07/20"],
-            [8, 3, 4, "A", "02/08/20"],
-            [9, 3, 5, "A", "02/09/20"],
-            
-            [10, 4, 3, "A", "01/01/20"],
-            [11, 4, 2, "B", "01/01/20"],
-            [12, 4, 1, "B", "01/01/20"],
-            [13, 5, 1, "C", "01/01/20"],
-            [14, 5, 2, "C", "01/01/20"],
-            [15, 5, 1, "A", "01/02/20"],
-            [16, 6, 4, "A", "01/02/20"],
-            [17, 6, 4, "A", "01/02/20"],
-            [18, 6, 5, "A", "01/02/20"],
-
-            [19, 7, 3, "A", "03/01/20"],
-            [20, 7, 2, "B", "03/01/20"],
-            [21, 7, 1, "B", "03/01/20"],
-            [22, 8, 1, "C", "03/01/20"],
-            [23, 8, 2, "C", "03/01/20"],
-            [24, 8, 1, "A", "03/02/20"],
-            [25, 9, 4, "A", "03/02/20"],
-            [26, 9, 4, "A", "03/02/20"],
-            [27, 9, 5, "A", "03/02/20"],
-
-            [28, 10, 3, "A", "04/01/20"],
-            [29, 10, 2, "B", "04/01/20"],
-            [30, 10, 1, "B", "04/01/20"],
-            [31, 11, 1, "C", "04/01/20"],
-            [32, 11, 2, "C", "04/02/20"],
-            [33, 11, 1, "A", "04/02/20"],
-            [34, 12, 4, "A", "04/02/20"],
-            [35, 12, 4, "A", "04/02/20"],
-            [36, 12, 5, "A", "04/02/20"],
-
-            [37, 13, 3, "A", "05/01/20"],
-            [38, 13, 2, "B", "05/01/20"],
-            [39, 13, 1, "B", "05/01/20"],
-            [40, 14, 1, "C", "05/01/20"],
-            [41, 14, 2, "C", "05/02/20"],
-            [42, 14, 1, "A", "05/02/20"],
-            [43, 15, 4, "A", "05/02/20"],
-            [44, 15, 4, "A", "05/02/20"],
-            [45, 15, 5, "A", "05/02/20"],
-
-            [46, 16, 3, "A", "06/01/20"],
-            [47, 16, 2, "B", "06/01/20"],
-            [48, 16, 2, "B", "06/01/20"],
-            [49, 17, 1, "C", "06/01/20"],
-            [50, 17, 2, "C", "06/02/20"],
-            [51, 17, 1, "A", "06/02/20"],
-            [52, 18, 4, "A", "06/02/20"],
-            [53, 18, 4, "A", "06/02/20"],
-            [54, 18, 5, "A", "06/02/20"]
-          ]
-          // rowData: [
-          //   [1, 1, 3, "A", new Date("02/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [2, 1, 2, "B", new Date("02/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [3, 1, 1, "B", new Date("02/03/20").toLocaleString("en-US", dateFormatOption)],
-          //   [4, 2, 1, "C", new Date("02/04/20").toLocaleString("en-US", dateFormatOption)],
-          //   [5, 2, 2, "C", new Date("02/05/20").toLocaleString("en-US", dateFormatOption)],
-          //   [6, 2, 1, "A", new Date("02/06/20").toLocaleString("en-US", dateFormatOption)],
-          //   [7, 3, 4, "A", new Date("02/07/20").toLocaleString("en-US", dateFormatOption)],
-          //   [8, 3, 4, "A", new Date("02/08/20").toLocaleString("en-US", dateFormatOption)],
-          //   [9, 3, 5, "A", new Date("02/09/20").toLocaleString("en-US", dateFormatOption)],
-            
-          //   [10, 4, 3, "A", new Date("01/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [11, 4, 2, "B", new Date("01/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [12, 4, 1, "B", new Date("01/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [13, 5, 1, "C", new Date("01/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [14, 5, 2, "C", new Date("01/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [15, 5, 1, "A", new Date("01/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [16, 6, 4, "A", new Date("01/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [17, 6, 4, "A", new Date("01/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [18, 6, 5, "A", new Date("01/02/20").toLocaleString("en-US", dateFormatOption)],
-
-          //   [19, 7, 3, "A", new Date("03/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [20, 7, 2, "B", new Date("03/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [21, 7, 1, "B", new Date("03/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [22, 8, 1, "C", new Date("03/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [23, 8, 2, "C", new Date("03/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [24, 8, 1, "A", new Date("03/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [25, 9, 4, "A", new Date("03/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [26, 9, 4, "A", new Date("03/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [27, 9, 5, "A", new Date("03/02/20").toLocaleString("en-US", dateFormatOption)],
-
-          //   [28, 10, 3, "A", new Date("04/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [29, 10, 2, "B", new Date("04/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [30, 10, 1, "B", new Date("04/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [31, 11, 1, "C", new Date("04/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [32, 11, 2, "C", new Date("04/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [33, 11, 1, "A", new Date("04/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [34, 12, 4, "A", new Date("04/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [35, 12, 4, "A", new Date("04/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [36, 12, 5, "A", new Date("04/02/20").toLocaleString("en-US", dateFormatOption)],
-
-          //   [37, 13, 3, "A", new Date("05/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [38, 13, 2, "B", new Date("05/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [39, 13, 1, "B", new Date("05/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [40, 14, 1, "C", new Date("05/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [41, 14, 2, "C", new Date("05/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [42, 14, 1, "A", new Date("05/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [43, 15, 4, "A", new Date("05/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [44, 15, 4, "A", new Date("05/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [45, 15, 5, "A", new Date("05/02/20").toLocaleString("en-US", dateFormatOption)],
-
-          //   [46, 16, 3, "A", new Date("06/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [47, 16, 2, "B", new Date("06/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [48, 16, 2, "B", new Date("06/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [49, 17, 1, "C", new Date("06/01/20").toLocaleString("en-US", dateFormatOption)],
-          //   [50, 17, 2, "C", new Date("06/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [51, 17, 1, "A", new Date("06/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [52, 18, 4, "A", new Date("06/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [53, 18, 4, "A", new Date("06/02/20").toLocaleString("en-US", dateFormatOption)],
-          //   [54, 18, 5, "A", new Date("06/02/20").toLocaleString("en-US", dateFormatOption)]
-          // ]
-        });
-
-        // grdCustom = new DBGrid({
-        //   wrapper: "#grdCustom",
-        //   dataKeyNames: "KEY",
-        //   emptyDataText: "Click button to add item.",
-        //   width: 220,
-        //   //cancelSelectOnClick: true,
+        // const grdClient = new DBGrid({
+        //   wrapper: "#grdClient",
+        //   dataKeyNames: "ID",
+        //   //allowPaging: false,
+        //   pageSize: 3,
+        //   pagerCount: 5,
+        //   width: 700,
         //   columns: [
         //     { type: "checkbox", hideColumn: false, autoCheck: true },
-        //     //{ type: "toggle", hideColumn: true, autoOpen: true },
-        //     { fieldName: "KEY", fieldHeader: "Key", fieldWidth: 100, displayOrder: 1, hideField: true, isDataKeyField: true },
-        //     { fieldName: "ITEM_NUMBER", fieldHeader: "Item #", fieldWidth: 100, displayOrder: 2, hideField: false, isDataKeyField: false },
-        //     { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldWidth: 100, displayOrder: 3, hideField: false, isDataKeyField: false },
+        //     { fieldName: "ID", fieldHeader: "Key", fieldType: "number", fieldWidth: 0, displayOrder: 1, hideField: true, isDataKeyField: true },
+        //     { fieldName: "SEQUENCE", fieldHeader: "Sequence", fieldType: "number",fieldWidth: 110, displayOrder: 2, hideField: false, isDataKeyField: false },
+        //     { fieldName: "NUMBER", fieldHeader: "Number", fieldType: "number",fieldWidth: 110, displayOrder: 2, hideField: false, isDataKeyField: false },
+        //     { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldType: "string", fieldWidth: 115, displayOrder: 3, hideField: false, isDataKeyField: false },
+        //     { fieldName: "DATE", fieldHeader: "Date Created", fieldType: "date", fieldWidth: 200, displayOrder: 4, hideField: false, isDataKeyField: false }
         //   ],
-        //   rowData: []
+        //   rowData: [
+        //     [1, 1, 3, "A", "02/01/20"],
+        //     [2, 1, 2, "B", "02/02/20"],
+        //     [3, 1, 1, "B", "02/03/20"],
+        //     [4, 2, 1, "C", "02/04/20"],
+        //     [5, 2, 2, "C", "02/05/20"],
+        //     [6, 2, 1, "A", "02/06/20"],
+        //     [7, 3, 4, "A", "02/07/20"],
+        //     [8, 3, 4, "A", "02/08/20"],
+        //     [9, 3, 5, "A", "02/09/20"],
+            
+        //     [10, 4, 3, "A", "01/01/20"],
+        //     [11, 4, 2, "B", "01/01/20"],
+        //     [12, 4, 1, "B", "01/01/20"],
+        //     [13, 5, 1, "C", "01/01/20"],
+        //     [14, 5, 2, "C", "01/01/20"],
+        //     [15, 5, 1, "A", "01/02/20"],
+        //     [16, 6, 4, "A", "01/02/20"],
+        //     [17, 6, 4, "A", "01/02/20"],
+        //     [18, 6, 5, "A", "01/02/20"],
+
+        //     [19, 7, 3, "A", "03/01/20"],
+        //     [20, 7, 2, "B", "03/01/20"],
+        //     [21, 7, 1, "B", "03/01/20"],
+        //     [22, 8, 1, "C", "03/01/20"],
+        //     [23, 8, 2, "C", "03/01/20"],
+        //     [24, 8, 1, "A", "03/02/20"],
+        //     [25, 9, 4, "A", "03/02/20"],
+        //     [26, 9, 4, "A", "03/02/20"],
+        //     [27, 9, 5, "A", "03/02/20"],
+
+        //     [28, 10, 3, "A", "04/01/20"],
+        //     [29, 10, 2, "B", "04/01/20"],
+        //     [30, 10, 1, "B", "04/01/20"],
+        //     [31, 11, 1, "C", "04/01/20"],
+        //     [32, 11, 2, "C", "04/02/20"],
+        //     [33, 11, 1, "A", "04/02/20"],
+        //     [34, 12, 4, "A", "04/02/20"],
+        //     [35, 12, 4, "A", "04/02/20"],
+        //     [36, 12, 5, "A", "04/02/20"],
+
+        //     [37, 13, 3, "A", "05/01/20"],
+        //     [38, 13, 2, "B", "05/01/20"],
+        //     [39, 13, 1, "B", "05/01/20"],
+        //     [40, 14, 1, "C", "05/01/20"],
+        //     [41, 14, 2, "C", "05/02/20"],
+        //     [42, 14, 1, "A", "05/02/20"],
+        //     [43, 15, 4, "A", "05/02/20"],
+        //     [44, 15, 4, "A", "05/02/20"],
+        //     [45, 15, 5, "A", "05/02/20"],
+
+        //     [46, 16, 3, "A", "06/01/20"],
+        //     [47, 16, 2, "B", "06/01/20"],
+        //     [48, 16, 2, "B", "06/01/20"],
+        //     [49, 17, 1, "C", "06/01/20"],
+        //     [50, 17, 2, "C", "06/02/20"],
+        //     [51, 17, 1, "A", "06/02/20"],
+        //     [52, 18, 4, "A", "06/02/20"],
+        //     [53, 18, 4, "A", "06/02/20"],
+        //     [54, 18, 5, "A", "06/02/20"]
+        //   ]
         // });
+
+        const grdCustom = new DBGrid({
+          wrapper: "#grdCustom",
+          dataKeyNames: "KEY",
+          emptyDataText: "Click button to add item.",
+          pagerCount: 5,
+          pageSize: 5,
+          width: 220,
+          //cancelSelectOnClick: true,
+          columns: [
+            { type: "checkbox", hideColumn: false, autoCheck: true },
+            //{ type: "toggle", hideColumn: true, autoOpen: true },
+            { fieldName: "KEY", fieldHeader: "Key", fieldType: "number", fieldWidth: 100, displayOrder: 1, hideField: true, isDataKeyField: true },
+            { fieldName: "ITEM_NUMBER", fieldHeader: "Item #", fieldType: "number", fieldWidth: 100, displayOrder: 2, hideField: false, isDataKeyField: false },
+            { fieldName: "ITEM_DESC", fieldHeader: "Description", fieldType: "string", fieldWidth: 100, displayOrder: 3, hideField: false, isDataKeyField: false },
+          ],
+          rowData: []
+        });
 
         // grdConfig = new DBGrid({
         //   wrapper: "#grdConfig",
@@ -339,14 +278,14 @@
         //   }
         // });
 
-        //btnAddItem.addEventListener("click", addItem);
+        btnAddItem.addEventListener("click", addItem);
 
         function addItem() {
-          let cell = [-1, 1, "Item"];
+          let cell = [-1, 1, ""];
 
           cell[0] = grdCustom.rowData.length + 1;
           cell[1] = grdCustom.rowData.length + 1;
-
+          cell[2] = grdCustom.rowData.length + 1 + " - Item";
           grdCustom.addRow(cell);//.select();
         }
 
