@@ -279,7 +279,7 @@
 
       return grid;
     },
-    createTableBodyRows() {
+    createTableBodyRows: function() {
       const grid = this;
       
       for (let i = 0; i < grid.rowData.length; i++) {
@@ -665,7 +665,7 @@
     },
     updateTableBodyRows: function() {
       const grid = this;
-      const rows = grid.table.tBodies[0].querySelectorAll("tr");
+      const rows = Array.from(grid.table.tBodies[0].querySelectorAll("tr"));
       const rowIndex = grid.selectedIndex;
       const pageIndex = Math.floor(rowIndex / grid.options.pageSize);
 
@@ -765,7 +765,7 @@
 
       return grid;
     },
-    addRow: function (cells, fromInternal = false) {
+    addRow: function (cells, fromInternal) {
       const grid = this;
       const customFields = grid.column.getCustomFields.call(grid);
       const rowData = customFields.concat(cells).map(function (cell, index) {
@@ -1697,17 +1697,8 @@
         const grid = this;
         const rows = grid.row.getNodes.call(grid);
 
-        console.log(rows)
         rows[index].select();
-        // .forEach(function(row) {
-        //   const rowIndex = row.rowIndex;
-
-        //   if (index === rowIndex) {
-        //     row.click();
-        //     return false;
-        //   }
-        // });
-
+        
         return grid;
       },
       parseValue: function (value, type) {
@@ -1813,14 +1804,14 @@
 
         sortList
           .reverse()
-          .map((sort) => {
+          .map(function(sort) {
             const fieldName = sort.split(" ")[0];
             const direction = sort.split(" ")[1];
             const index = grid.column.getIndex.call(grid, fieldName);
             const fieldType = grid.column.getFieldByIndex.call(grid, index).fieldType;
 
             if (direction === "ASC") {
-              sorted.sort((a, b) => {
+              sorted.sort(function(a, b) {
                 if (fieldType === "string") {
                   return a[index].localeCompare(b[index]);
                 } else if (fieldType === "number") {
@@ -1830,7 +1821,7 @@
                 }
               });
             } else if (direction === "DESC") {
-              sorted.sort((a, b) => {
+              sorted.sort(function(a, b) {
                 if (fieldType === "string") {
                   return b[index].localeCompare(a[index]);
                 } else if (fieldType === "number") {
