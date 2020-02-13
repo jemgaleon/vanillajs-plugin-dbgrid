@@ -93,61 +93,13 @@
       // Init grid's container/wrapper
       grid.getWrapper();
 
-      // Inir bindings
-      // Events
-      grid.on.creating = grid.on.creating.bind(grid);
-      grid.on.created = grid.on.created.bind(grid);
-      grid.on.sort = grid.on.sort.bind(grid);
-      grid.on.sorting = grid.on.sorting.bind(grid);
-      grid.on.sorted = grid.on.sorted.bind(grid);
-      grid.on.rowCreated = grid.on.rowCreated.bind(grid);
-      grid.on.rowToggleCreated = grid.on.rowToggleCreated.bind(grid);
-      grid.on.checkAll = grid.on.checkAll.bind(grid);
-      grid.on.check = grid.on.check.bind(grid);
-      grid.on.toggleAll = grid.on.toggleAll.bind(grid);
-      grid.on.toggle = grid.on.toggle.bind(grid);
-      grid.on.selectedIndexChange = grid.on.selectedIndexChange.bind(grid);
-      grid.on.selectedIndexChanging = grid.on.selectedIndexChanging.bind(grid);
-      grid.on.selectedIndexChanged = grid.on.selectedIndexChanged.bind(grid);
-      grid.on.pageIndexChange = grid.on.pageIndexChange.bind(grid);
-      grid.on.pageIndexChanging = grid.on.pageIndexChanging.bind(grid);
-      grid.on.pageIndexChanged = grid.on.pageIndexChanged.bind(grid);
-
-      // Service
-      grid.service.getColumns = grid.service.getColumns.bind(grid);
-      grid.service.getRowData = grid.service.getRowData.bind(grid);
-      grid.service.getRowKeys = grid.service.getRowKeys.bind(grid);
-      // Row
-      grid.row.getData = grid.row.getData.bind(grid);
-      grid.row.getSelectedKeys = grid.row.getSelectedKeys.bind(grid);
-      grid.row.getAllKeys = grid.row.getAllKeys.bind(grid);
-      grid.row.hasSelectedKeys = grid.row.hasSelectedKeys.bind(grid);
-      grid.row.getNodes = grid.row.getNodes.bind(grid);
-      grid.row.select = grid.row.select.bind(grid);
-      grid.row.selectByKey = grid.row.selectByKey.bind(grid);
-      grid.row.selectByIndex = grid.row.selectByIndex.bind(grid);
-      grid.row.parseValue = grid.row.parseValue.bind(grid);
-      // Column
-      grid.column.getFieldByName = grid.column.getFieldByName.bind(grid);
-      grid.column.getFieldByIndex = grid.column.getFieldByIndex.bind(grid);
-      grid.column.hasCustomField = grid.column.hasCustomField.bind(grid);
-      grid.column.getCustomFields = grid.column.getCustomFields.bind(grid);
-      grid.column.getCustomField = grid.column.getCustomField.bind(grid);
-      grid.column.getIndex = grid.column.getIndex.bind(grid);
-      grid.column.sort = grid.column.sort.bind(grid);
-      grid.column.updateSortOrderText = grid.column.updateSortOrderText.bind(grid);
-      // Pager
-      grid.pager.selectByIndex = grid.pager.selectByIndex.bind(grid);
-      // Utility
-      grid.utility.getServiceURL = grid.utility.getServiceURL.bind(grid);
-
       return grid;
     },
     create: function () {
       const grid = this;
 
       // Call event creating before creating the content
-      grid.on.creating();
+      grid.on.creating.call(grid);
 
       grid
         .removeTable()
@@ -159,7 +111,7 @@
       //todo: move created event here if async/await
       // if (grid.initialization) {
       //   grid.success = true;
-      //   grid.on.created();
+      //   grid.on.created.call(grid);
       // }
 
       return grid;
@@ -242,7 +194,7 @@
 
         if (grid.initialization) {
           grid.success = true;
-          grid.on.created();
+          grid.on.created.call(grid);
         }
       }
 
@@ -815,7 +767,7 @@
     },
     addRow: function (cells, fromInternal = false) {
       const grid = this;
-      const customFields = grid.column.getCustomFields();
+      const customFields = grid.column.getCustomFields.call(grid);
       const rowData = customFields.concat(cells).map(function (cell, index) {
         let data = null;
 
@@ -878,7 +830,7 @@
         allowPaging: grid.options.allowPaging
       };
 
-      grid.service.getColumns(params);
+      grid.service.getColumns.call(grid, params);
     },
     fetchRowData: function () {
       const grid = this;
@@ -892,7 +844,7 @@
         pageSize: grid.options.pageSize
       };
 
-      grid.service.getRowData(params);
+      grid.service.getRowData.call(grid, params);
     },
     on: {
       // Note: creating order of parameter: parent -> child, e.g. grid, tbody, row, td, self/sender
@@ -918,14 +870,19 @@
           .hideLoading();
         
         // Select first
-        if (grid.rowData.length > 0
-          && !grid.row.cancelSelectOnClick) {
-          grid.row.selectByIndex(0);
+        if (grid.rowData.length > 0) {
+          if (!grid.options.cancelSelectOnClick) {
+            grid.row.selectByIndex.call(grid, 0);
+          }
+
+          if (grid.options.allowPaging) {
+            grid.updateTableBodyRows();
+          }
         }
 
         // Toggle all
-        if (grid.column.hasCustomField("toggle")) {
-          const customField = grid.column.getCustomField("toggle");
+        if (grid.column.hasCustomField.call(grid, "toggle")) {
+          const customField = grid.column.getCustomField.call(grid, "toggle");
 
           if (!customField.hideColumn && customField.autoOpen) {
             const imgToggleAll = grid.table.tHead.querySelector("th img[type='toggle']");
@@ -936,8 +893,8 @@
         }
 
         // Checkbox All
-        if (grid.column.hasCustomField("checkbox")) {
-          const customField = grid.column.getCustomField("checkbox");
+        if (grid.column.hasCustomField.call(grid, "checkbox")) {
+          const customField = grid.column.getCustomField.call(grid, "checkbox");
 
           if (!customField.hideColumn && customField.autoCheck) {
             const checkboxAll = grid.table.tHead.querySelector("th input[type='checkbox']");
@@ -986,7 +943,7 @@
           if (grid.options.allowPaging) {
             if (!grid.initialization) {
               const pageIndex = Math.floor((sender.rowIndex - 1) / grid.options.pageSize);
-              grid.pager.selectByIndex(pageIndex);
+              grid.pager.selectByIndex.call(grid, pageIndex);
               
               grid.updateTableBodyRows();
             }
@@ -994,7 +951,7 @@
         }
 
         // Toggle: create tr.toggle-row here
-        if (grid.column.hasCustomField("toggle")) {
+        if (grid.column.hasCustomField.call(grid, "toggle")) {
           const trToggle = document.createElement("tr");
           const tdToggle = document.createElement("td");
           const colSpan = grid.columns.filter(function (column) {
@@ -1011,14 +968,14 @@
           grid.table.tBodies[0].appendChild(trToggle);
 
           // Events
-          grid.on.rowToggleCreated(sender, trToggle);
+          grid.on.rowToggleCreated.call(grid, sender, trToggle);
         }
 
         // Checkbox
-        if (grid.column.hasCustomField("checkbox")) {
-          const customField = grid.column.getCustomField("checkbox");
+        if (grid.column.hasCustomField.call(grid, "checkbox")) {
+          const customField = grid.column.getCustomField.call(grid, "checkbox");
           const checkbox = sender.querySelector("td input[type=checkbox]");
-          const selectedKeys = grid.row.getSelectedKeys();
+          const selectedKeys = grid.row.getSelectedKeys.call(grid);
 
           if (selectedKeys.length
             && selectedKeys.indexOf(sender.dataset[grid.options.primaryKeyName]) > -1) {
@@ -1036,7 +993,7 @@
       },
       rowToggleCreated: function (parentRow, sender) {
         const grid = this;
-        const customField = grid.column.getCustomField("toggle");
+        const customField = grid.column.getCustomField.call(grid, "toggle");
 
         // Do default behavior first
         if (customField.autoOpen) {
@@ -1068,7 +1025,7 @@
               };
 
               // Call user-defined event on success of fetch
-              grid.service.getRowKeys(params);
+              grid.service.getRowKeys.call(grid, params);
             } else {
               const checkboxes = Array.from(
                 grid.table.tBodies[0].querySelectorAll(
@@ -1077,7 +1034,7 @@
               );
 
               checkboxes.forEach(function (checkbox) {
-                grid.on.check(checkbox.parent("tr"), sender, event);
+                grid.on.check.call(grid, checkbox.parent("tr"), sender, event);
               });
 
               // Todo: cleanup
@@ -1112,7 +1069,7 @@
           );
 
           checkboxes.forEach(function (checkbox) {
-            grid.on.check(checkbox.parent("tr"), sender, event);
+            grid.on.check.call(grid, checkbox.parent("tr"), sender, event);
           });
 
           // Todo: cleanup
@@ -1135,7 +1092,7 @@
         const checkbox = isSenderCheckboxAll
           ? row.querySelector("td input[type=checkbox]")
           : sender;
-        const selectedKeys = grid.row.getSelectedKeys();
+        const selectedKeys = grid.row.getSelectedKeys.call(grid);
         const selectedKey = row.dataset[grid.options.primaryKeyName];
 
         if (isSenderCheckboxAll) {
@@ -1261,7 +1218,7 @@
         const grid = this;
 
         // Before row select
-        grid.on.selectedIndexChanging(sender, event);
+        grid.on.selectedIndexChanging.call(grid, sender, event);
 
         // Update selected index
         grid.selectedIndex = sender.rowIndex - 1; // rowIndex is non-zero based index
@@ -1276,7 +1233,7 @@
         sender.classList.add("selected");
         
         // After row select
-        grid.on.selectedIndexChanged(sender, event);
+        grid.on.selectedIndexChanged.call(grid, sender, event);
       },
       selectedIndexChanging: function (sender, event) {
         const grid = this;
@@ -1308,7 +1265,7 @@
         }
 
         // Before paging
-        grid.on.pageIndexChanging(sender, event);
+        grid.on.pageIndexChanging.call(grid, sender, event);
         
         // Update selected page index
         const selectedPagerValue = sender.value;
@@ -1354,7 +1311,7 @@
               selectedIndex = grid.selectedPageIndex * grid.options.pageSize;
             }
             
-            grid.row.selectByIndex(selectedIndex);
+            grid.row.selectByIndex.call(grid, selectedIndex);
           }
           
           // Show/hide rows
@@ -1365,7 +1322,7 @@
         }
 
         // After paging
-        grid.on.pageIndexChanged(sender, event);
+        grid.on.pageIndexChanged.call(grid, sender, event);
       },
       pageIndexChanging: function (sender, event) {
         const grid = this;
@@ -1393,7 +1350,7 @@
         const grid = this;
 
         // Before sort
-        grid.on.sorting(sender, event);
+        grid.on.sorting.call(grid, sender, event);
 
         // Sort list and direction
         const sortName = sender.sortName;
@@ -1439,13 +1396,13 @@
         sender.sortDirection = sortDirection;
 
         // Update sort order text
-        grid.column.updateSortOrderText();
+        grid.column.updateSortOrderText.call(grid);
 
         // Update table
         if (grid.options.gridName) {
           grid.fetchRowData();
         } else {
-          const sorted = grid.column.sort(Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
+          const sorted = grid.column.sort.call(grid, Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
           
           grid.rowData = sorted;
           grid
@@ -1453,17 +1410,17 @@
             .createTableBody(); // todo: need a cleaner way to update body
           
           if (!grid.options.cancelSelectOnClick) {
-            grid.row.selectByIndex(0);
+            grid.row.selectByIndex.call(grid, 0);
           }
 
           if (grid.options.allowPaging) {
-            grid.pager.selectByIndex(0);
+            grid.pager.selectByIndex.call(grid, 0);
             grid.updateTableBodyRows();
           }
         }
 
         // After sort
-        grid.on.sorted(sender, event);
+        grid.on.sorted.call(grid, sender, event);
       },
       sorting: function (sender, event) {
         const grid = this;
@@ -1512,7 +1469,7 @@
 
         // Todo: Use fetch, async/await instead
         $.ajax({
-          url: grid.utility.getServiceURL().columns,
+          url: grid.utility.getServiceURL.call(grid).columns,
           data: params,
           method: "POST",
           success: function (data) {
@@ -1562,7 +1519,7 @@
 
         // Todo: Use fetch, async/await instead
         $.ajax({
-          url: grid.utility.getServiceURL().rowData,
+          url: grid.utility.getServiceURL.call(grid).rowData,
           data: params,
           method: "POST",
           success: function (data) {
@@ -1598,7 +1555,7 @@
               grid.success = response.success;
               // Call this once, since no support yet for async/await.
               // Todo: Use async/await instead
-              grid.on.created();
+              grid.on.created.call(grid);
             }
           },
           error: function (error) {
@@ -1618,7 +1575,7 @@
 
         // Todo: Use fetch, async/await instead
         $.ajax({
-          url: grid.utility.getServiceURL().rowKeys,
+          url: grid.utility.getServiceURL.call(grid).rowKeys,
           data: params,
           method: "POST",
           success: function (data) {
@@ -1723,7 +1680,7 @@
       },
       selectByKey: function(key) {
         const grid = this;
-        const rows = grid.row.getNodes();
+        const rows = grid.row.getNodes.call(grid);
         
         rows.forEach(function(row) {
           const rowKey = row.dataset[grid.options.primaryKeyName];
@@ -1738,8 +1695,9 @@
       },
       selectByIndex: function(index) {
         const grid = this;
-        const rows = grid.row.getNodes();
+        const rows = grid.row.getNodes.call(grid);
 
+        console.log(rows)
         rows[index].select();
         // .forEach(function(row) {
         //   const rowIndex = row.rowIndex;
@@ -1826,7 +1784,7 @@
         /// <returns type="Object">Returns the custom field.</returns>
 
         const grid = this;
-        const customFields = grid.column.getCustomFields();
+        const customFields = grid.column.getCustomFields.call(grid);
         let customField = null;
 
         for (let i = 0; i < customFields.length; i++) {
@@ -1858,8 +1816,8 @@
           .map((sort) => {
             const fieldName = sort.split(" ")[0];
             const direction = sort.split(" ")[1];
-            const index = grid.column.getIndex(fieldName);
-            const fieldType = grid.column.getFieldByIndex(index).fieldType;
+            const index = grid.column.getIndex.call(grid, fieldName);
+            const fieldType = grid.column.getFieldByIndex.call(grid, index).fieldType;
 
             if (direction === "ASC") {
               sorted.sort((a, b) => {
