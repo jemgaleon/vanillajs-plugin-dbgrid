@@ -1,30 +1,6 @@
 # GridView Javascript Plugin
 
-A simple JavaScript implementation of the .NET GridView control (and some of our GridView custom control).
-
-Todo(s):
-- [ ] Support for client-side data rendering
- - update hide/show rows depending on paging settings
- - paging: go to recently add row
- - scroll: scrollTo
- - sort: new rows, update rowData
-- [ ] Programmatically set grid.options.dataKeyNames for client-side 
-- [x] Fetch data web api (paging and sorting feature)
-- [x] AllowSorting
-- [x] AllowPaging/PageSize
-- [x] SelectedIndex
-- [x] AllowSorting
-- [x] AllowPaging
-- [x] PageSize
-- [x] PagerCount
-- [x] Toggle feature
-- [x] DataKeyNames
-- [x] Grid user settings from database support (records per page, uses scrollbar, grid width, grid height, field names, sql string)
-
-Issue(s):
-- [ ] Toggle issue row background nth-child(odd)
-- [ ] IE tbody scroll
-
+A JavaScript implementation of the .NET GridView control.
 
 Usage:
 ```javascript
