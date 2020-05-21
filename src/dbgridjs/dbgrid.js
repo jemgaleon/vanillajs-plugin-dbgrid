@@ -20,12 +20,17 @@
       allowPaging: true,
       pageSize: 10,
       pagerCount: 10,
-      dateFormat: { localeMatcher: "best fit", month: "2-digit", day: "2-digit", year: "numeric"},
+      dateFormat: {
+        localeMatcher: "best fit",
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      },
       locales: "en-US",
       columns: [
         // Stucture:
-        // { type: "checkbox", hideColumn: true, autoCheck: true },
-        // { type: "toggle", hideColumn: true, autoOpen: true },
+        // { type: "checkbox", hideField: true, autoCheck: true },
+        // { type: "toggle", hideField: true, autoOpen: true },
         // { fieldName: "FIELD_NAME", fieldHeader: "Prompt", fieldWidth: 0, displayOrder: 1, hideField: true, isDataKeyField: true },
         // { fieldName: "FIELD_NAME", fieldHeader: "Prompt", fieldWidth: 80, displayOrder: 2, hideField: false, isDataKeyField: false }
       ],
@@ -36,18 +41,18 @@
         // ["Value", "Value"]
       ],
       serviceURL: {
-        columns: "/GetColumns",
-        rowData: "/GetRowData",
-        rowKeys: "/GetRowKeys"
+        columns: "",
+        rowData: "",
+        rowKeys: "",
       },
       assetsURL: {
-        sortAsc: "./src/dbgridjs/assets/sortasc.bmp",
-        sortDesc: "./src/dbgridjs/assets/sortdesc.bmp",
-        toggleCollapse: "./src/dbgridjs/assets/toggle_collapse.png",
-        toggleExpand: "./src/dbgridjs/assets/toggle_expand.png",
-        loader: "./src/dbgridjs/assets/ajax-loader.gif"
+        sortAsc: "./src/dbgridjs/assets/sort-asc.bmp",
+        sortDesc: "./src/dbgridjs/assets/sort-desc.bmp",
+        toggleCollapse: "./src/dbgridjs/assets/toggle-collapse.png",
+        toggleExpand: "./src/dbgridjs/assets/toggle-expand.png",
+        loader: "./src/dbgridjs/assets/loader.gif",
       },
-      events: {}
+      events: {},
     };
 
     // Create options by extending with the passed in arguments
@@ -68,12 +73,10 @@
     grid.totalRecords = 0;
     grid.selectedPageIndex = 0; // zero based index
     grid.selectedIndex = 0; // zero based index
-    grid.initialization = false;
+    grid.initialization = true;
 
     // Initialization
-    grid
-      .init()
-      .create();
+    grid.init().create();
   };
 
   // Public Methods
@@ -85,8 +88,7 @@
       grid.initialization = true;
 
       // Init primaryKeyName value
-      if (grid.options.dataKeyNames.length
-        && !grid.options.primaryKeyName) {
+      if (grid.options.dataKeyNames.length && !grid.options.primaryKeyName) {
         grid.options.primaryKeyName = grid.options.dataKeyNames.split(",")[0];
       }
 
@@ -160,9 +162,7 @@
 
       // DBGridConfig data
       if (grid.options.gridName) {
-        grid
-          .setWrapper()
-          .fetchColumns();
+        grid.setWrapper().fetchColumns();
       }
       // Custom data
       else {
@@ -182,14 +182,12 @@
 
         if (grid.rowData.length > 0) {
           grid.showTableHead();
-          
+
           if (grid.options.allowPaging) {
-            grid
-              .updateTableBodyRows();
+            grid.updateTableBodyRows();
           }
         } else {
-          grid
-            .showCaption();
+          grid.showCaption();
         }
 
         if (grid.initialization) {
@@ -239,14 +237,14 @@
           data = {
             cellValue: column.type,
             type: "custom",
-            hidden: column.hideColumn
+            hidden: column.hideField,
           };
 
           if (column.hasOwnProperty("autoOpen")) {
             data["autoOpen"] = column.autoOpen;
           }
 
-          if (column.hasOwnProperty("autoOpen")) {
+          if (column.hasOwnProperty("autoCheck")) {
             data["autoCheck"] = column.autoCheck;
           }
         } else {
@@ -254,7 +252,7 @@
             cellValue: column.fieldHeader,
             width: column.fieldWidth,
             hidden: column.hideField,
-            sortName: column.fieldName
+            sortName: column.fieldName,
           };
         }
 
@@ -262,7 +260,7 @@
       }, []);
       const tr = grid.createTableRow({
         isColumn: true,
-        rowData: rowData
+        rowData: rowData,
       });
 
       grid.table.tHead.appendChild(tr);
@@ -271,7 +269,7 @@
     },
     createTableBody: function () {
       const grid = this;
-      
+
       grid.table.appendChild(document.createElement("tbody"));
       grid.createTableBodyRows();
       //Todo: fix IE display: sticky alternative
@@ -279,9 +277,9 @@
 
       return grid;
     },
-    createTableBodyRows: function() {
+    createTableBodyRows: function () {
       const grid = this;
-      
+
       for (let i = 0; i < grid.rowData.length; i++) {
         const rowData = grid.rowData[i];
 
@@ -301,12 +299,12 @@
             pageSize: grid.options.pageSize,
             pagerCount: grid.options.pagerCount,
             selectedPageIndex: grid.selectedPageIndex,
-            totalRecords: grid.totalRecords
-          }
+            totalRecords: grid.totalRecords,
+          },
         ];
         const tr = grid.createTableRow({
           isFoot: true,
-          rowData: rowData
+          rowData: rowData,
         });
 
         grid.table.tFoot.appendChild(tr);
@@ -329,8 +327,8 @@
             tableDataProps = {
               cellType: "input|type=checkbox",
               isColumn: props.isColumn,
-              hideColumn: props.rowData[i].hidden,
-              autoCheck: props.rowData[i].autoCheck
+              hideField: props.rowData[i].hidden,
+              autoCheck: props.rowData[i].autoCheck,
             };
           }
           // Toggle
@@ -338,8 +336,8 @@
             tableDataProps = {
               cellType: "img|type=toggle,alt=collapse",
               isColumn: props.isColumn,
-              hideColumn: props.rowData[i].hidden,
-              autoOpen: props.rowData[i].autoOpen
+              hideField: props.rowData[i].hidden,
+              autoOpen: props.rowData[i].autoOpen,
             };
           }
 
@@ -355,7 +353,7 @@
             if (props.isColumn) {
               tableDataProps = {
                 cellValue: props.rowData[i].cellValue,
-                sortName: props.rowData[i].sortName
+                sortName: props.rowData[i].sortName,
               };
 
               const th = grid.createTableHeadData(tableDataProps);
@@ -368,7 +366,7 @@
                 pageSize: props.rowData[i].pageSize,
                 pagerCount: props.rowData[i].pagerCount,
                 selectedPageIndex: props.rowData[i].selectedPageIndex,
-                totalRecords: props.rowData[i].totalRecords
+                totalRecords: props.rowData[i].totalRecords,
               };
 
               const th = grid.createTableFootData(tableDataProps);
@@ -377,7 +375,7 @@
             // Table body
             else if (props.isBody) {
               tableDataProps = {
-                cellValue: props.rowData[i].cellValue
+                cellValue: props.rowData[i].cellValue,
               };
 
               const td = grid.createTableData(tableDataProps);
@@ -393,14 +391,6 @@
           const dataKeyName = props.rowData[i].dataKeyName;
 
           tr.dataset[dataKeyName.toUpperCase()] = props.rowData[i].cellValue;
-        }
-      }
-
-      // Events
-      if (props.isBody) {
-        if (!grid.options.cancelSelectOnClick) {
-          tr.addEventListener("click", grid.on.selectedIndexChange.bind(grid, tr));
-          tr.select = grid.on.selectedIndexChange.bind(grid, tr);
         }
       }
 
@@ -468,9 +458,10 @@
     createTableFootData: function (props) {
       const grid = this;
       const th = document.createElement("th");
-      const pageGroup = Math.floor(props.selectedPageIndex / props.pagerCount) + 1;
+      const pageGroup =
+        Math.floor(props.selectedPageIndex / props.pagerCount) + 1;
       const totalPages = Math.ceil(props.totalRecords / props.pageSize);
-      
+
       // Add previous paging
       if (pageGroup > 1) {
         const a = document.createElement("a");
@@ -496,14 +487,14 @@
         // Add class
         if (props.selectedPageIndex === i) {
           // Todo: Move this pageIndexChange event
-          a.classList.add("selected")
+          a.classList.add("selected");
           a.setAttribute("disabled", true);
         }
 
         // Add event
         a.addEventListener("click", grid.on.pageIndexChange.bind(grid, a));
 
-        a.appendChild(document.createTextNode(i + 1));// diplay start at 1
+        a.appendChild(document.createTextNode(i + 1)); // diplay start at 1
 
         // Add attibute
         a.value = i;
@@ -527,7 +518,10 @@
       }
 
       // Add attribute
-      th.setAttribute("colspan", grid.table.tHead.querySelectorAll("th").length);
+      th.setAttribute(
+        "colspan",
+        grid.table.tHead.querySelectorAll("th").length
+      );
 
       return th;
     },
@@ -537,8 +531,7 @@
         ? document.createElement("th")
         : document.createElement("td");
 
-      if (props.cellType
-        && props.cellType.indexOf("|") > -1) {
+      if (props.cellType && props.cellType.indexOf("|") > -1) {
         const control = grid.createCustomControl.call(grid, props, tr, td);
         const span = document.createElement("span");
 
@@ -575,15 +568,21 @@
         td.classList.add("icon-size");
 
         if (props.isColumn) {
-          if (props.hideColumn) {
+          if (props.hideField) {
             control.classList.add("hidden");
           }
 
           control.classList.add("checkbox-all");
-          control.addEventListener("click", grid.on.checkAll.bind(grid, control));
+          control.addEventListener(
+            "click",
+            grid.on.checkAll.bind(grid, control)
+          );
         } else {
           control.classList.add("checkbox");
-          control.addEventListener("click", grid.on.check.bind(grid, tr, control));
+          control.addEventListener(
+            "click",
+            grid.on.check.bind(grid, tr, control)
+          );
         }
       }
       // Toggle
@@ -600,13 +599,19 @@
 
         // Add class and event
         if (props.isColumn) {
-          if (props.hideColumn) {
+          if (props.hideField) {
             control.classList.add("hidden");
           }
 
-          control.addEventListener("click", grid.on.toggleAll.bind(grid, control));
+          control.addEventListener(
+            "click",
+            grid.on.toggleAll.bind(grid, control)
+          );
         } else {
-          control.addEventListener("click", grid.on.toggle.bind(grid, tr, control));
+          control.addEventListener(
+            "click",
+            grid.on.toggle.bind(grid, tr, control)
+          );
         }
       }
 
@@ -648,7 +653,7 @@
 
       if (grid.table.tBodies.length) {
         //if (grid.options.gridName) {
-          grid.table.removeChild(grid.table.tBodies[0]);
+        grid.table.removeChild(grid.table.tBodies[0]);
         //}
       }
 
@@ -663,14 +668,15 @@
 
       return grid;
     },
-    updateTableBodyRows: function() {
+    updateTableBodyRows: function () {
       const grid = this;
       const rows = Array.from(grid.table.tBodies[0].querySelectorAll("tr"));
       const rowIndex = grid.selectedIndex;
       const pageIndex = Math.floor(rowIndex / grid.options.pageSize);
 
-      rows.forEach(function(row) {
-        const included = Math.floor((row.rowIndex - 1) / grid.options.pageSize) === pageIndex;
+      rows.forEach(function (row) {
+        const included =
+          Math.floor((row.rowIndex - 1) / grid.options.pageSize) === pageIndex;
 
         if (!included) {
           row.classList.add("hidden");
@@ -681,7 +687,7 @@
 
       return grid;
     },
-    showTable: function() {
+    showTable: function () {
       const grid = this;
 
       grid.table.classList.remove("hidden");
@@ -691,11 +697,7 @@
     showCaption: function (caption) {
       const grid = this;
 
-      grid
-        .createTableCaption(caption);
-        // .removeTableHead()
-        // .removeTableBody()
-        // .removeTableFoot();
+      grid.createTableCaption(caption).showTable().hideLoading();
 
       return grid;
     },
@@ -758,8 +760,10 @@
     hideLoading: function () {
       const grid = this;
 
-      if (grid.wrapper.childNodes.length
-        && grid.wrapper.contains(grid.loader)) {
+      if (
+        grid.wrapper.childNodes.length &&
+        grid.wrapper.contains(grid.loader)
+      ) {
         grid.wrapper.removeChild(grid.loader);
       }
 
@@ -775,21 +779,21 @@
           data = {
             cellValue: cell.type,
             type: "custom",
-            hidden: cell.hideColumn
+            hidden: cell.hideField,
           };
 
           if (cell.hasOwnProperty("autoOpen")) {
             data["autoOpen"] = cell.autoOpen;
           }
 
-          if (cell.hasOwnProperty("autoOpen")) {
+          if (cell.hasOwnProperty("autoCheck")) {
             data["autoCheck"] = cell.autoCheck;
           }
         } else {
           data = {
             cellValue: cell,
             width: grid.columns[index].fieldWidth,
-            hidden: grid.columns[index].hideField
+            hidden: grid.columns[index].hideField,
           };
 
           if (grid.columns[index].isDataKeyField) {
@@ -801,8 +805,17 @@
       }, []);
       const tr = grid.createTableRow({
         isBody: true,
-        rowData: rowData
+        rowData: rowData,
       });
+
+      // Events
+      if (!grid.options.cancelSelectOnClick) {
+        tr.addEventListener(
+          "click",
+          grid.on.selectedIndexChange.bind(grid, tr)
+        );
+        tr.select = grid.on.selectedIndexChange.bind(grid, tr);
+      }
 
       // Todo: find where to insert for sort, for now add at the bottom
       grid.table.tBodies[0].appendChild(tr);
@@ -827,7 +840,7 @@
         width: grid.options.width,
         height: grid.options.height,
         pageSize: grid.options.pageSize,
-        allowPaging: grid.options.allowPaging
+        allowPaging: grid.options.allowPaging,
       };
 
       grid.service.getColumns.call(grid, params);
@@ -841,7 +854,7 @@
         selectedPageIndex: grid.options.allowPaging
           ? grid.selectedPageIndex
           : -1,
-        pageSize: grid.options.pageSize
+        pageSize: grid.options.pageSize,
       };
 
       grid.service.getRowData.call(grid, params);
@@ -855,20 +868,17 @@
         grid.showLoading();
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.creating === "function") {
+        if (grid.events && typeof grid.events.creating === "function") {
           grid.events.creating.call(grid);
         }
       },
       created: function () {
         const grid = this;
-        
+
         // Do default behavior first
         grid.initialization = false;
-        grid
-          .showTable()
-          .hideLoading();
-        
+        grid.showTable().hideLoading();
+
         // Select first
         if (grid.rowData.length > 0) {
           if (!grid.options.cancelSelectOnClick) {
@@ -884,8 +894,10 @@
         if (grid.column.hasCustomField.call(grid, "toggle")) {
           const customField = grid.column.getCustomField.call(grid, "toggle");
 
-          if (!customField.hideColumn && customField.autoOpen) {
-            const imgToggleAll = grid.table.tHead.querySelector("th img[type='toggle']");
+          if (!customField.hideField && customField.autoOpen) {
+            const imgToggleAll = grid.table.tHead.querySelector(
+              "th img[type='toggle']"
+            );
 
             imgToggleAll.src = grid.options.assetsURL.toggleCollapse;
             imgToggleAll.toggled = true;
@@ -896,8 +908,11 @@
         if (grid.column.hasCustomField.call(grid, "checkbox")) {
           const customField = grid.column.getCustomField.call(grid, "checkbox");
 
-          if (!customField.hideColumn && customField.autoCheck) {
-            const checkboxAll = grid.table.tHead.querySelector("th input[type='checkbox']");
+          // Check based on autoCheck
+          if (!customField.hideField && customField.autoCheck) {
+            const checkboxAll = grid.table.tHead.querySelector(
+              "th input[type='checkbox']"
+            );
 
             checkboxAll.checked = false;
             checkboxAll.click();
@@ -905,8 +920,7 @@
         }
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.created === "function") {
+        if (grid.events && typeof grid.events.created === "function") {
           grid.events.created.call(grid);
         }
       },
@@ -916,8 +930,7 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.columnCreated === "function") {
+        if (grid.events && typeof grid.events.columnCreated === "function") {
           grid.events.columnCreated.call(grid, sender);
         }
       },
@@ -929,22 +942,22 @@
         if (!grid.options.gridName) {
           // Update total records
           grid.totalRecords = grid.rowData.length;
-          
+
           // Update header
-          grid
-            .hideCaption()
-            .showTableHead();
+          grid.hideCaption().showTableHead();
 
           // Update selected index
           if (!grid.options.cancelSelectOnClick) {
             sender.select();
           }
-            
+
           if (grid.options.allowPaging) {
             if (!grid.initialization) {
-              const pageIndex = Math.floor((sender.rowIndex - 1) / grid.options.pageSize);
+              const pageIndex = Math.floor(
+                (sender.rowIndex - 1) / grid.options.pageSize
+              );
               grid.pager.selectByIndex.call(grid, pageIndex);
-              
+
               grid.updateTableBodyRows();
             }
           }
@@ -962,7 +975,8 @@
           tdToggle.setAttribute("colSpan", colSpan);
 
           trToggle.classList.add("toggle-row");
-          trToggle.dataset[grid.options.primaryKeyName] = sender.dataset[grid.options.primaryKeyName];
+          trToggle.dataset[grid.options.primaryKeyName] =
+            sender.dataset[grid.options.primaryKeyName];
           trToggle.appendChild(tdToggle);
 
           grid.table.tBodies[0].appendChild(trToggle);
@@ -974,14 +988,21 @@
         // Checkbox
         if (grid.column.hasCustomField.call(grid, "checkbox")) {
           const customField = grid.column.getCustomField.call(grid, "checkbox");
+          const checkboxAll = grid.table.tHead.querySelector(
+            "th input[type=checkbox]"
+          );
           const checkbox = sender.querySelector("td input[type=checkbox]");
           const selectedKeys = grid.row.getSelectedKeys.call(grid);
 
-          if (selectedKeys.length
-            && selectedKeys.indexOf(sender.dataset[grid.options.primaryKeyName]) > -1) {
+          // Check based on selectedKeys
+          if (
+            selectedKeys.length &&
+            selectedKeys.indexOf(sender.dataset[grid.options.primaryKeyName]) >
+              -1
+          ) {
             checkbox.click();
-          } else if (!customField.hideColumn
-            && customField.autoCheck) {
+            // Check based if cbAll is checked
+          } else if (!customField.hideField && checkboxAll.checked) {
             checkbox.click();
           }
         }
@@ -1003,8 +1024,7 @@
         }
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.rowToggleCreated === "function") {
+        if (grid.events && typeof grid.events.rowToggleCreated === "function") {
           grid.events.rowToggleCreated.call(grid, parentRow, sender);
         }
       },
@@ -1021,7 +1041,7 @@
               const params = {
                 gridName: grid.options.gridName,
                 additionalCriteria: grid.options.additionalCriteria,
-                primaryKeyName: grid.options.primaryKeyName
+                primaryKeyName: grid.options.primaryKeyName,
               };
 
               // Call user-defined event on success of fetch
@@ -1074,8 +1094,7 @@
 
           // Todo: cleanup
           // Call user-defined event
-          if (grid.events
-            && typeof grid.events.checkAll === "function") {
+          if (grid.events && typeof grid.events.checkAll === "function") {
             grid.events.checkAll.call(grid, sender, event);
           }
         }
@@ -1085,7 +1104,8 @@
 
         // Do default behavior first
         // Verify if sender is checkboxAll or checkbox
-        const isSenderCheckboxAll = sender.className.indexOf("checkbox-all") > -1;
+        const isSenderCheckboxAll =
+          sender.className.indexOf("checkbox-all") > -1;
         const checkboxAll = isSenderCheckboxAll
           ? sender
           : grid.table.tHead.querySelector("th input[type=checkbox]");
@@ -1140,15 +1160,12 @@
 
         checkboxAll.dataset["SELECTED_KEYS"] = selectedKeys;
 
-        // Todo: cleanup - Fix recheck of cb doesn't update cbAll
-        if (!isSenderCheckboxAll
-          && grid.options.allowPaging) {
+        if (!isSenderCheckboxAll && grid.options.allowPaging) {
           checkboxAll.checked = grid.totalRecords === selectedKeys.length;
         }
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.check === "function") {
+        if (grid.events && typeof grid.events.check === "function") {
           grid.events.check.call(grid, checkboxAll, row, checkbox, event);
         }
 
@@ -1176,8 +1193,7 @@
         });
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.toggleAll === "function") {
+        if (grid.events && typeof grid.events.toggleAll === "function") {
           grid.events.toggleAll.call(grid, sender, event);
         }
 
@@ -1191,8 +1207,10 @@
 
         let tr = null;
 
-        if (row.nextSibling
-          && row.nextSibling.classList.contains("toggle-row")) {
+        if (
+          row.nextSibling &&
+          row.nextSibling.classList.contains("toggle-row")
+        ) {
           tr = row.nextSibling;
         }
 
@@ -1207,8 +1225,7 @@
         }
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.toggle === "function") {
+        if (grid.events && typeof grid.events.toggle === "function") {
           grid.events.toggle.call(grid, row, tr, sender, event);
         }
 
@@ -1231,7 +1248,7 @@
         }
 
         sender.classList.add("selected");
-        
+
         // After row select
         grid.on.selectedIndexChanged.call(grid, sender, event);
       },
@@ -1241,8 +1258,10 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.selectedIndexChanging === "function") {
+        if (
+          grid.events &&
+          typeof grid.events.selectedIndexChanging === "function"
+        ) {
           grid.events.selectedIndexChanging.call(grid, sender, event);
         }
       },
@@ -1252,8 +1271,10 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.selectedIndexChanged === "function") {
+        if (
+          grid.events &&
+          typeof grid.events.selectedIndexChanged === "function"
+        ) {
           grid.events.selectedIndexChanged.call(grid, sender, event);
         }
       },
@@ -1266,14 +1287,16 @@
 
         // Before paging
         grid.on.pageIndexChanging.call(grid, sender, event);
-        
+
         // Update selected page index
         const selectedPagerValue = sender.value;
-        let selectedPageIndex = typeof selectedPagerValue === "number"
-          ? Number(selectedPagerValue)
-          : grid.selectedPageIndex;
-        const pageGroup = Math.floor(selectedPageIndex / grid.options.pagerCount) + 1;
-        
+        let selectedPageIndex =
+          typeof selectedPagerValue === "number"
+            ? Number(selectedPagerValue)
+            : grid.selectedPageIndex;
+        const pageGroup =
+          Math.floor(selectedPageIndex / grid.options.pagerCount) + 1;
+
         if (selectedPagerValue === "previous") {
           selectedPageIndex = (pageGroup - 2) * grid.options.pagerCount;
         } else if (selectedPagerValue === "next") {
@@ -1287,7 +1310,7 @@
 
         // Upadate selected pager
         const selectedPager = grid.table.tFoot.querySelector("th a.selected");
-        
+
         if (selectedPager) {
           selectedPager.classList.remove("selected");
           selectedPager.removeAttribute("disabled");
@@ -1310,15 +1333,12 @@
             if (grid.selectedPageIndex > 0) {
               selectedIndex = grid.selectedPageIndex * grid.options.pageSize;
             }
-            
+
             grid.row.selectByIndex.call(grid, selectedIndex);
           }
-          
+
           // Show/hide rows
-          grid
-            .updateTableBodyRows()
-            .removeTableFoot()
-            .createTableFoot();
+          grid.updateTableBodyRows().removeTableFoot().createTableFoot();
         }
 
         // After paging
@@ -1330,8 +1350,10 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.pageIndexChanging === "function") {
+        if (
+          grid.events &&
+          typeof grid.events.pageIndexChanging === "function"
+        ) {
           grid.events.pageIndexChanging.call(grid, sender, event);
         }
       },
@@ -1341,8 +1363,7 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.pageIndexChanged === "function") {
+        if (grid.events && typeof grid.events.pageIndexChanged === "function") {
           grid.events.pageIndexChanged.call(grid, sender, event);
         }
       },
@@ -1402,13 +1423,15 @@
         if (grid.options.gridName) {
           grid.fetchRowData();
         } else {
-          const sorted = grid.column.sort.call(grid, Array.from(grid.sortList), Array.from(grid.options.rowData)); // use grid.options.rowData
-          
+          const sorted = grid.column.sort.call(
+            grid,
+            Array.from(grid.sortList),
+            Array.from(grid.options.rowData)
+          ); // use grid.options.rowData
+
           grid.rowData = sorted;
-          grid
-            .removeTableBody()
-            .createTableBody(); // todo: need a cleaner way to update body
-          
+          grid.removeTableBody().createTableBody(); // todo: need a cleaner way to update body
+
           if (!grid.options.cancelSelectOnClick) {
             grid.row.selectByIndex.call(grid, 0);
           }
@@ -1428,8 +1451,7 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.sorting === "function") {
+        if (grid.events && typeof grid.events.sorting === "function") {
           grid.events.sorting.call(grid, sender, event);
         }
       },
@@ -1439,8 +1461,7 @@
         // Do default behavior first
 
         // Call user-defined event
-        if (grid.events
-          && typeof grid.events.sorted === "function") {
+        if (grid.events && typeof grid.events.sorted === "function") {
           grid.events.sorted.call(grid, sender, event);
         }
       },
@@ -1457,15 +1478,19 @@
         return {
           columns: root + grid.options.serviceURL.columns,
           rowData: root + grid.options.serviceURL.rowData,
-          rowKeys: root + grid.options.serviceURL.rowKeys
+          rowKeys: root + grid.options.serviceURL.rowKeys,
         };
-      }
+      },
     },
     service: {
       getColumns: function (params) {
         /// <summary>Fetches the row columns from the web service.</summary>
 
         const grid = this;
+
+        if (!grid.options.serviceURL.columns) {
+          return;
+        }
 
         // Todo: Use fetch, async/await instead
         $.ajax({
@@ -1488,34 +1513,31 @@
               grid.columns = grid.options.columns.concat(response.result);
 
               // Create table head
-              grid
-                .removeTableHead()
-                .createTableHead()
-                .setWrapper();
+              grid.removeTableHead().createTableHead().setWrapper();
 
               // Fetch row data
               grid.fetchRowData();
             } else {
               // Create table caption "Something went wrong."
-              grid
-                .showCaption("Something went wrong.")
-                .hideLoading();
+              grid.showCaption("Something went wrong.");
             }
           },
           error: function (error) {
             // Create table caption "Something went wrong."
-            grid
-              .showCaption("Something went wrong.")
-              .hideLoading();
+            grid.showCaption("Something went wrong.");
 
             console.error(error);
-          }
+          },
         });
       },
       getRowData: function (params) {
         /// <summary>Fetches the row data from the web service.</summary>
 
         const grid = this;
+
+        if (!grid.options.serviceURL.rowData) {
+          return;
+        }
 
         // Todo: Use fetch, async/await instead
         $.ajax({
@@ -1531,24 +1553,17 @@
 
               if (grid.totalRecords === 0) {
                 // Create table caption "No records found."
-                grid
-                  .showCaption();
+                grid.showCaption();
               } else {
                 // Create table body and foot (pager)
-                grid
-                  .removeTableBody()
-                  .createTableBody()
+                grid.removeTableBody().createTableBody();
 
                 if (grid.options.allowPaging) {
-                    grid
-                      .removeTableFoot()
-                      .createTableFoot();
+                  grid.removeTableFoot().createTableFoot();
                 }
               }
             } else {
-              grid
-                .showCaption("Something went wrong.")
-                .hideLoading();
+              grid.showCaption("Something went wrong.");
             }
 
             if (grid.initialization) {
@@ -1560,18 +1575,20 @@
           },
           error: function (error) {
             // Create table caption "Something went wrong."
-            grid
-              .showCaption("Something went wrong.")
-              .hideLoading();
+            grid.showCaption("Something went wrong.");
 
             console.error(error);
-          }
+          },
         });
       },
       getRowKeys: function (params) {
         /// <summary>Fetches the row keys from the web service. Used this to get all keys if allowPaging is true.</summary>
 
         const grid = this;
+
+        if (!grid.options.serviceURL.rowKeys) {
+          return;
+        }
 
         // Todo: Use fetch, async/await instead
         $.ajax({
@@ -1609,9 +1626,9 @@
           },
           error: function (error) {
             console.error(error);
-          }
+          },
         });
-      }
+      },
     },
     row: {
       getData: function () {
@@ -1643,13 +1660,17 @@
         /// <returns type="Array">Returns the dataset `SELECTED_KEYS` in JSON format.</returns>
 
         const grid = this;
-        const rows = Array.from(grid.table.tBodies[0].rows);
+        if (grid.options.gridName) {
+          return []; // call grid.service.getRowKeys
+        } else {
+          const rows = Array.from(grid.table.tBodies[0].rows);
 
-        return rows.reduce(function (rowKeys, row) {
-          rowKeys.push(row.dataset[grid.options.primaryKeyName]);
+          return rows.reduce(function (rowKeys, row) {
+            rowKeys.push(row.dataset[grid.options.primaryKeyName]);
 
-          return rowKeys;
-        }, []);
+            return rowKeys;
+          }, []);
+        }
       },
       hasSelectedKeys: function () {
         /// <summary>Checks if there's a selected key based on dataset `SELECTED_KEYS`.</summary>
@@ -1665,26 +1686,26 @@
 
         return selectedKeys.length > 0;
       },
-      getNodes: function() {
+      getNodes: function () {
         const grid = this;
         const rows = grid.table.tBodies[0].querySelectorAll("tr");
 
         return rows;
       },
-      select: function(row) {
+      select: function (row) {
         const grid = this;
 
         row.click();
 
         return grid;
       },
-      selectByKey: function(key) {
+      selectByKey: function (key) {
         const grid = this;
         const rows = grid.row.getNodes.call(grid);
-        
-        rows.forEach(function(row) {
+
+        rows.forEach(function (row) {
           const rowKey = row.dataset[grid.options.primaryKeyName];
-          
+
           if (key === rowKey) {
             row.click();
             return false;
@@ -1693,12 +1714,12 @@
 
         return grid;
       },
-      selectByIndex: function(index) {
+      selectByIndex: function (index) {
         const grid = this;
         const rows = grid.row.getNodes.call(grid);
 
         rows[index].select();
-        
+
         return grid;
       },
       parseValue: function (value, type) {
@@ -1720,23 +1741,23 @@
       },
     },
     column: {
-      getFieldByName: function(fieldName) {
+      getFieldByName: function (fieldName) {
         const grid = this;
         return grid.columns
-          .filter(function(column) {
+          .filter(function (column) {
             return !column.hasOwnProperty("type");
           })
-          .find(function(column) {
+          .find(function (column) {
             return column.fieldName === fieldName;
           });
       },
-      getFieldByIndex: function(fieldIndex) {
+      getFieldByIndex: function (fieldIndex) {
         const grid = this;
         return grid.columns
-          .filter(function(column) {
+          .filter(function (column) {
             return !column.hasOwnProperty("type");
           })
-          .find(function(column, index) {
+          .find(function (column, index) {
             return index === fieldIndex;
           });
       },
@@ -1787,14 +1808,14 @@
 
         return customField;
       },
-      getIndex: function(fieldName) {
+      getIndex: function (fieldName) {
         const grid = this;
 
         return grid.columns
-          .filter(function(column) {
+          .filter(function (column) {
             return !column.hasOwnProperty("type");
           })
-          .findIndex(function(column) {
+          .findIndex(function (column) {
             return fieldName === column.fieldName;
           });
       },
@@ -1802,54 +1823,52 @@
         const grid = this;
         const sorted = rowData;
 
-        sortList
-          .reverse()
-          .map(function(sort) {
-            const fieldName = sort.split(" ")[0];
-            const direction = sort.split(" ")[1];
-            const index = grid.column.getIndex.call(grid, fieldName);
-            const fieldType = grid.column.getFieldByIndex.call(grid, index).fieldType;
+        sortList.reverse().map(function (sort) {
+          const fieldName = sort.split(" ")[0];
+          const direction = sort.split(" ")[1];
+          const index = grid.column.getIndex.call(grid, fieldName);
+          const fieldType = grid.column.getFieldByIndex.call(grid, index)
+            .fieldType;
 
-            if (direction === "ASC") {
-              sorted.sort(function(a, b) {
-                if (fieldType === "string") {
-                  return a[index].localeCompare(b[index]);
-                } else if (fieldType === "number") {
-                  return Number(a[index]) - Number(b[index]);
-                } else if (fieldType === "date") {
-                  return new Date(a[index]) - new Date(b[index]);
-                }
-              });
-            } else if (direction === "DESC") {
-              sorted.sort(function(a, b) {
-                if (fieldType === "string") {
-                  return b[index].localeCompare(a[index]);
-                } else if (fieldType === "number") {
-                  return Number(b[index]) - Number(a[index]);
-                } else if (fieldType === "date") {
-                  return new Date(b[index]) - new Date(a[index]);
-                }
-              });
-            }
-          });
+          if (direction === "ASC") {
+            sorted.sort(function (a, b) {
+              if (fieldType === "string") {
+                return a[index].localeCompare(b[index]);
+              } else if (fieldType === "number") {
+                return Number(a[index]) - Number(b[index]);
+              } else if (fieldType === "date") {
+                return new Date(a[index]) - new Date(b[index]);
+              }
+            });
+          } else if (direction === "DESC") {
+            sorted.sort(function (a, b) {
+              if (fieldType === "string") {
+                return b[index].localeCompare(a[index]);
+              } else if (fieldType === "number") {
+                return Number(b[index]) - Number(a[index]);
+              } else if (fieldType === "date") {
+                return new Date(b[index]) - new Date(a[index]);
+              }
+            });
+          }
+        });
 
         return sorted;
       },
-      updateSortOrderText: function() {
+      updateSortOrderText: function () {
         const grid = this;
         const columns = Array.from(grid.table.tHead.querySelectorAll("th a"));
 
-        columns.map(function(column) {
+        columns.map(function (column) {
           const spanOrder = column.parent("th").querySelector("span");
           const sortName = column.sortName;
-          const sortIndex = grid.sortList
-            .findIndex(function(clause) {
-              const clauseName = clause.split(" ")[0];
+          const sortIndex = grid.sortList.findIndex(function (clause) {
+            const clauseName = clause.split(" ")[0];
 
-              return clauseName === sortName;
-            });
-            
-          if (sortIndex > -1) {              
+            return clauseName === sortName;
+          });
+
+          if (sortIndex > -1) {
             spanOrder.classList.remove("hidden");
             spanOrder.textContent = sortIndex + 1;
           } else {
@@ -1857,21 +1876,19 @@
             spanOrder.textContent = "";
           }
         });
-      }
+      },
     },
     pager: {
-      selectByIndex: function(index) {
+      selectByIndex: function (index) {
         const grid = this;
         const pagers = grid.table.tFoot.querySelectorAll("th a");
 
         grid.selectedPageIndex = index;
-        grid
-          .removeTableFoot()
-          .createTableFoot();
+        grid.removeTableFoot().createTableFoot();
 
         return grid;
-      }
-    }
+      },
+    },
   };
 
   // Private Methods
